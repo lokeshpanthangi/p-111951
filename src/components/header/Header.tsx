@@ -2,9 +2,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, BarChart3 } from "lucide-react";
+import { Menu, X, BarChart3, FileText } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 import UserMenu from "./UserMenu";
+import { ThemeToggle } from "../theme/ThemeToggle";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -39,13 +40,19 @@ const Header = () => {
             <Link to="/report" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors">
               Report Issue
             </Link>
+            <Link to="/my-issues" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors flex items-center">
+              <FileText size={16} className="mr-1" />
+              My Issues
+            </Link>
             <Link to="/analytics" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors flex items-center">
               <BarChart3 size={16} className="mr-1" />
               Analytics
             </Link>
           </nav>
 
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2">
+            <ThemeToggle />
+            
             {isLoggedIn ? (
               <UserMenu onLogout={handleAuth} />
             ) : (
@@ -57,7 +64,7 @@ const Header = () => {
               </div>
             )}
             
-            <div className="md:hidden ml-4">
+            <div className="md:hidden">
               <Button 
                 variant="ghost" 
                 onClick={toggleMobileMenu}

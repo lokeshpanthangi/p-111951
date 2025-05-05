@@ -1,218 +1,286 @@
 
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import Header from "@/components/header/Header";
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Header from "@/components/header/Header";
+import Footer from "@/components/Footer";
 import CategoryDistribution from "@/components/analytics/CategoryDistribution";
 import TemporalAnalysis from "@/components/analytics/TemporalAnalysis";
 import TopVotedIssues from "@/components/analytics/TopVotedIssues";
 import MapView from "@/components/analytics/MapView";
-import { Loader2 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
+import { IssueCategory, IssueStatus } from "@/types";
 
-// Mock fetch function - in a real app, this would call your API
-const fetchAnalyticsData = async () => {
-  // Simulating API delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  // Mock data for analytics
-  return {
-    categories: {
-      road: 32,
-      water: 24,
-      sanitation: 18,
-      electricity: 15,
-      other: 11,
-    },
-    temporal: [
-      { date: "2025-04-29", count: 8 },
-      { date: "2025-04-30", count: 12 },
-      { date: "2025-05-01", count: 10 },
-      { date: "2025-05-02", count: 15 },
-      { date: "2025-05-03", count: 20 },
-      { date: "2025-05-04", count: 17 },
-      { date: "2025-05-05", count: 13 },
-    ],
-    topVoted: [
-      { id: "1", title: "Broken traffic light on Main Street", votes: 87, category: "road", status: "in-progress" },
-      { id: "2", title: "Water leak near community center", votes: 72, category: "water", status: "pending" },
-      { id: "3", title: "Trash collection missed for 2 weeks", votes: 65, category: "sanitation", status: "resolved" },
-      { id: "4", title: "Flickering street lights on Oak Avenue", votes: 58, category: "electricity", status: "pending" },
-      { id: "5", title: "Pothole causing damage to vehicles", votes: 52, category: "road", status: "in-progress" },
-    ],
-    issueLocations: [
-      { id: "1", title: "Broken traffic light on Main Street", lat: 40.712776, lng: -74.005974, category: "road", status: "in-progress", votes: 87 },
-      { id: "2", title: "Water leak near community center", lat: 40.715076, lng: -74.002974, category: "water", status: "pending", votes: 72 },
-      { id: "3", title: "Trash collection missed for 2 weeks", lat: 40.712176, lng: -74.007974, category: "sanitation", status: "resolved", votes: 65 },
-      { id: "4", title: "Flickering street lights on Oak Avenue", lat: 40.710776, lng: -74.003974, category: "electricity", status: "pending", votes: 58 },
-      { id: "5", title: "Pothole causing damage to vehicles", lat: 40.713776, lng: -74.006974, category: "road", status: "in-progress", votes: 52 },
-      { id: "6", title: "Fallen tree blocking sidewalk", lat: 40.714776, lng: -74.001974, category: "other", status: "pending", votes: 45 },
-      { id: "7", title: "Broken water main", lat: 40.711776, lng: -74.004974, category: "water", status: "in-progress", votes: 38 },
-    ]
-  };
-};
+// Type definitions for the data structures
+interface CategoryData {
+  category: IssueCategory;
+  count: number;
+}
+
+interface TemporalData {
+  date: string;
+  count: number;
+}
+
+interface TopVotedIssue {
+  id: string;
+  title: string;
+  votes: number;
+  category: IssueCategory;
+  status: IssueStatus;
+}
+
+interface MapIssue {
+  id: string;
+  title: string;
+  lat: number;
+  lng: number;
+  category: IssueCategory;
+  status: IssueStatus;
+  votes: number;
+}
 
 const Analytics = () => {
-  const [timeRange, setTimeRange] = useState("7days");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["analytics", timeRange],
-    queryFn: fetchAnalyticsData,
-  });
-  
-  const handleCategoryClick = (category: string) => {
-    setSelectedCategory(prev => prev === category ? null : category);
-  };
-  
-  const filteredData = React.useMemo(() => {
-    if (!data || !selectedCategory) return data;
-    
-    // Filter temporal data by category (in a real app, this would be more sophisticated)
-    // For now, we'll just simulate filtered data
-    return {
-      ...data,
-      temporal: data.temporal.map(day => ({
-        ...day, 
-        count: Math.floor(day.count * 0.7) // Simulating filtered data
-      })),
-      topVoted: data.topVoted.filter(issue => issue.category === selectedCategory),
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  // Mock data for charts
+  const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
+  const [temporalData, setTemporalData] = useState<TemporalData[]>([]);
+  const [topVotedIssues, setTopVotedIssues] = useState<TopVotedIssue[]>([]);
+  const [mapIssues, setMapIssues] = useState<MapIssue[]>([]);
+
+  useEffect(() => {
+    const fetchAnalyticsData = async () => {
+      setIsLoading(true);
+      try {
+        // In a real app, these would be API calls
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+
+        // Mock category distribution data
+        setCategoryData([
+          { category: "road", count: 42 },
+          { category: "water", count: 28 },
+          { category: "electricity", count: 35 },
+          { category: "sanitation", count: 19 },
+          { category: "other", count: 15 },
+        ]);
+
+        // Mock temporal data (last 7 days)
+        const today = new Date();
+        const temporalMockData = Array.from({ length: 7 }, (_, i) => {
+          const date = new Date(today);
+          date.setDate(date.getDate() - (6 - i));
+          return {
+            date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
+            count: Math.floor(Math.random() * 10) + 5,
+          };
+        });
+        setTemporalData(temporalMockData);
+
+        // Mock top voted issues
+        setTopVotedIssues([
+          { 
+            id: "issue-1", 
+            title: "Massive pothole on Main Street causing traffic delays", 
+            votes: 47, 
+            category: "road" as IssueCategory, 
+            status: "pending" as IssueStatus 
+          },
+          { 
+            id: "issue-2", 
+            title: "Broken water main near Central Park", 
+            votes: 36, 
+            category: "water" as IssueCategory, 
+            status: "in-progress" as IssueStatus 
+          },
+          { 
+            id: "issue-3", 
+            title: "Frequent power outages in Westside neighborhood", 
+            votes: 32, 
+            category: "electricity" as IssueCategory, 
+            status: "in-progress" as IssueStatus
+          },
+          { 
+            id: "issue-4", 
+            title: "Overflowing trash bins on Pine Avenue", 
+            votes: 28, 
+            category: "sanitation" as IssueCategory, 
+            status: "resolved" as IssueStatus 
+          },
+          { 
+            id: "issue-5", 
+            title: "Dangerous intersection without proper signage", 
+            votes: 26, 
+            category: "road" as IssueCategory, 
+            status: "pending" as IssueStatus 
+          },
+        ]);
+
+        // Mock map issues
+        setMapIssues([
+          { 
+            id: "map-1", 
+            title: "Pothole on Main Street", 
+            lat: 40.7128, 
+            lng: -74.006, 
+            category: "road" as IssueCategory, 
+            status: "pending" as IssueStatus, 
+            votes: 47 
+          },
+          { 
+            id: "map-2", 
+            title: "Broken water main", 
+            lat: 40.7148, 
+            lng: -74.013, 
+            category: "water" as IssueCategory, 
+            status: "in-progress" as IssueStatus, 
+            votes: 36 
+          },
+          { 
+            id: "map-3", 
+            title: "Power outages", 
+            lat: 40.7158, 
+            lng: -73.990, 
+            category: "electricity" as IssueCategory, 
+            status: "in-progress" as IssueStatus, 
+            votes: 32 
+          },
+          { 
+            id: "map-4", 
+            title: "Trash overflow", 
+            lat: 40.7218, 
+            lng: -74.001, 
+            category: "sanitation" as IssueCategory, 
+            status: "resolved" as IssueStatus, 
+            votes: 28 
+          },
+          { 
+            id: "map-5", 
+            title: "Dangerous intersection", 
+            lat: 40.7098, 
+            lng: -73.997, 
+            category: "road" as IssueCategory, 
+            status: "pending" as IssueStatus, 
+            votes: 26 
+          },
+        ]);
+
+      } catch (error) {
+        console.error("Error fetching analytics data:", error);
+        toast({
+          title: "Error loading analytics",
+          description: "Could not load analytics data. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     };
-  }, [data, selectedCategory]);
-  
-  if (isError) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container px-4 py-8">
-          <h1 className="text-2xl font-bold mb-6">Analytics Dashboard</h1>
-          <Card className="p-10 text-center">
-            <CardContent>
-              <p className="text-destructive">Failed to load analytics data. Please try again later.</p>
-            </CardContent>
-          </Card>
-        </main>
-      </div>
-    );
-  }
-  
+
+    fetchAnalyticsData();
+  }, [toast]);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="container px-4 py-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-          <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
-          
-          <div className="flex items-center gap-2">
-            {selectedCategory && (
-              <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-1">
-                <span>Filtering by: {selectedCategory}</span>
-                <button 
-                  onClick={() => setSelectedCategory(null)}
-                  className="ml-1 rounded-full w-4 h-4 bg-primary text-primary-foreground flex items-center justify-center text-xs"
-                >
-                  ×
-                </button>
-              </div>
-            )}
-            
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select time range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="7days">Last 7 days</SelectItem>
-                  <SelectItem value="30days">Last 30 days</SelectItem>
-                  <SelectItem value="90days">Last 90 days</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="map">Map View</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="dashboard" className="space-y-6">
-            {isLoading ? (
-              <div className="h-96 flex items-center justify-center">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <span className="ml-2 text-muted-foreground">Loading analytics data...</span>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Issues by Category</CardTitle>
-                      <CardDescription>Distribution of issues across different categories</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <CategoryDistribution 
-                        data={data.categories}
-                        onCategoryClick={handleCategoryClick}
-                        selectedCategory={selectedCategory}
-                      />
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Issue Submissions Over Time</CardTitle>
-                      <CardDescription>Daily activity for the {timeRange === "7days" ? "past week" : timeRange === "30days" ? "past month" : "past 3 months"}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <TemporalAnalysis 
-                        data={filteredData?.temporal || data?.temporal || []} 
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-                
+
+      <main className="flex-grow py-8 md:py-12 bg-gray-50 dark:bg-gray-800">
+        <div className="container mx-auto px-4 md:px-6">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Analytics Dashboard</h1>
+          <p className="text-muted-foreground mb-8">
+            Explore and analyze civic issues across the community
+          </p>
+
+          <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-8">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="map">Map View</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Top Voted Issues</CardTitle>
-                    <CardDescription>Most supported issues in the community</CardDescription>
+                    <CardTitle>Category Distribution</CardTitle>
+                    <CardDescription>
+                      Number of issues by category
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <TopVotedIssues 
-                      data={filteredData?.topVoted || data?.topVoted || []} 
-                    />
+                  <CardContent className="h-[300px]">
+                    {isLoading ? (
+                      <div className="h-full flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                      </div>
+                    ) : (
+                      <CategoryDistribution data={categoryData} />
+                    )}
                   </CardContent>
                 </Card>
-              </>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="map">
-            <Card className="overflow-hidden">
-              <CardHeader>
-                <CardTitle>Geographic Distribution</CardTitle>
-                <CardDescription>Map view of reported issues</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                {isLoading ? (
-                  <div className="h-[600px] flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                    <span className="ml-2 text-muted-foreground">Loading map data...</span>
-                  </div>
-                ) : (
-                  <MapView 
-                    issues={data?.issueLocations || []}
-                    selectedCategory={selectedCategory}
-                    setSelectedCategory={setSelectedCategory}
-                  />
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Temporal Analysis</CardTitle>
+                    <CardDescription>
+                      Issue reports over the past 7 days
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="h-[300px]">
+                    {isLoading ? (
+                      <div className="h-full flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                      </div>
+                    ) : (
+                      <TemporalAnalysis data={temporalData} />
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top Voted Issues</CardTitle>
+                  <CardDescription>
+                    Most supported issues by community votes
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <div className="h-[400px] flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    </div>
+                  ) : (
+                    <TopVotedIssues issues={topVotedIssues} />
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="map">
+              <Card>
+                <CardContent className="p-0">
+                  {isLoading ? (
+                    <div className="h-[70vh] flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    </div>
+                  ) : (
+                    <MapView issues={mapIssues} />
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
+
+      <Footer />
     </div>
   );
 };

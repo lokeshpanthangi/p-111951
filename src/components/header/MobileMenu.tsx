@@ -1,6 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
 
 interface MobileMenuProps {
   isLoggedIn: boolean;
@@ -32,6 +33,14 @@ const MobileMenu = ({ isLoggedIn, onAuth, onClose }: MobileMenuProps) => {
           onClick={onClose}
         >
           Report Issue
+        </Link>
+        <Link 
+          to="/my-issues" 
+          className="flex items-center py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-civic-blue"
+          onClick={onClose}
+        >
+          <FileText size={16} className="mr-2" />
+          My Issues
         </Link>
         
         <div className="pt-2 pb-3 border-t">

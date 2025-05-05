@@ -12,27 +12,30 @@ import IssueDetails from "./pages/IssueDetails";
 import EditIssue from "./pages/EditIssue";
 import NotFound from "./pages/NotFound";
 import Analytics from "./pages/Analytics";
+import { ThemeProvider } from "./components/theme/ThemeProvider";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/report" element={<ReportIssue />} />
-          <Route path="/my-issues" element={<MyIssues />} />
-          <Route path="/issues" element={<BrowseIssues />} />
-          <Route path="/issues/:id" element={<IssueDetails />} />
-          <Route path="/edit-issue/:id" element={<EditIssue />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider defaultTheme="system" storageKey="issue-radar-theme">
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/report" element={<ReportIssue />} />
+            <Route path="/my-issues" element={<MyIssues />} />
+            <Route path="/issues" element={<BrowseIssues />} />
+            <Route path="/issues/:id" element={<IssueDetails />} />
+            <Route path="/edit-issue/:id" element={<EditIssue />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
