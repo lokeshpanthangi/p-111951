@@ -82,7 +82,7 @@ const BrowseIssues = () => {
       toast({
         title: "Vote recorded",
         description: "Your vote has been counted!",
-        variant: "success",
+        variant: "default", // Changed from "success" to "default" to fix the TypeScript error
       });
     } catch (error) {
       console.error("Error voting:", error);
