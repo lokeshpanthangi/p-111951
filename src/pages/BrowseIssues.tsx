@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   Search, X, SlidersHorizontal, ArrowUpCircle,
-  Clock, Filter, ChevronLeft, ChevronRight 
+  Clock, Filter, ChevronLeft, ChevronRight, MapPin
 } from "lucide-react";
 import { 
   Pagination, 
@@ -35,7 +35,7 @@ import IssueCard from "@/components/issues/IssueCard";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Sort options
-type SortOption = "newest" | "votes";
+type SortOption = "newest" | "votes" | "location";
 
 const BrowseIssues = () => {
   const [filteredIssues, setFilteredIssues] = useState<Issue[]>([]);
@@ -82,7 +82,7 @@ const BrowseIssues = () => {
       toast({
         title: "Vote recorded",
         description: "Your vote has been counted!",
-        variant: "default", // Changed from "success" to "default" to fix the TypeScript error
+        variant: "default",
       });
     } catch (error) {
       console.error("Error voting:", error);
@@ -146,6 +146,9 @@ const BrowseIssues = () => {
       result.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     } else if (sortOption === "votes") {
       result.sort((a, b) => b.votes - a.votes);
+    } else if (sortOption === "location") {
+      // Sort by location (alphabetically)
+      result.sort((a, b) => a.location.localeCompare(b.location));
     }
 
     setFilteredIssues(result);
@@ -306,6 +309,7 @@ const BrowseIssues = () => {
                         <SelectLabel>Sort by</SelectLabel>
                         <SelectItem value="newest">Newest First</SelectItem>
                         <SelectItem value="votes">Most Voted</SelectItem>
+                        <SelectItem value="location">Location</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -360,8 +364,12 @@ const BrowseIssues = () => {
                 
                 {sortBy !== "newest" && (
                   <div className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                    <ArrowUpCircle className="h-3 w-3" />
-                    Sorted by: {sortBy === "votes" ? "Most Votes" : sortBy}
+                    {sortBy === "votes" ? (
+                      <ArrowUpCircle className="h-3 w-3" />
+                    ) : (
+                      <MapPin className="h-3 w-3" />
+                    )}
+                    Sorted by: {sortBy === "votes" ? "Most Votes" : sortBy === "location" ? "Location" : sortBy}
                     <button 
                       className="ml-1 hover:text-primary-foreground" 
                       onClick={() => setSortBy("newest")}
@@ -460,6 +468,7 @@ const BrowseIssues = () => {
                     key={issue.id} 
                     issue={issue}
                     onClick={() => navigateToIssue(issue.id)}
+                    onVote={() => handleVote(issue.id)}
                   />
                 ))}
               </div>
