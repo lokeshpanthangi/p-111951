@@ -2,102 +2,96 @@
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { Issue } from "@/types";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ThumbsUp, Edit, Trash2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { ThumbsUp, Image } from "lucide-react";
+import { cn } from "@/lib/utils";
 import StatusBadge from "./StatusBadge";
 import CategoryIcon from "./CategoryIcon";
 
 interface IssueCardProps {
   issue: Issue;
-  onEdit?: () => void;
-  onDelete?: () => void;
   showActions?: boolean;
+  onClick?: () => void;
 }
 
-const IssueCard = ({ issue, onEdit, onDelete, showActions = false }: IssueCardProps) => {
+const IssueCard = ({ issue, showActions = false, onClick }: IssueCardProps) => {
   const timeAgo = formatDistanceToNow(issue.createdAt, { addSuffix: true });
-  const canEdit = showActions && issue.status === "pending";
-
+  
   return (
-    <Card className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow">
+    <Card 
+      className={cn(
+        "overflow-hidden h-full flex flex-col transition-all duration-200",
+        "hover:shadow-md hover:border-primary/20 hover:scale-[1.01]",
+        onClick && "cursor-pointer"
+      )}
+      onClick={onClick}
+    >
       <CardContent className="p-0 flex-grow">
         <div className="relative">
           {issue.imageUrl ? (
             <img 
               src={issue.imageUrl} 
               alt={issue.title}
-              className="w-full h-40 object-cover"
+              className="w-full h-36 object-cover"
+              loading="lazy"
             />
           ) : (
-            <div className="w-full h-40 bg-muted flex items-center justify-center">
+            <div className="w-full h-36 bg-muted flex items-center justify-center">
               <CategoryIcon category={issue.category} size={32} />
             </div>
           )}
+          
           <div className="absolute top-2 right-2">
-            <StatusBadge status={issue.status} />
+            <StatusBadge status={issue.status} size="sm" />
           </div>
+          
+          {issue.imageUrl && (
+            <div className="absolute bottom-2 left-2 bg-black/50 rounded-full p-1">
+              <Image size={16} className="text-white" />
+            </div>
+          )}
         </div>
         
         <div className="p-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
             <CategoryIcon category={issue.category} />
             <span className="capitalize">{issue.category}</span>
+            <span className="text-xs text-muted-foreground ml-auto">{timeAgo}</span>
           </div>
           
-          <Link to={`/issues/${issue.id}`} className="hover:underline">
-            <h3 className="font-semibold text-lg mb-2 line-clamp-2">{issue.title}</h3>
+          <Link to={`/issues/${issue.id}`} className="block group">
+            <h3 className="font-medium text-lg mb-2 line-clamp-2 group-hover:text-primary group-hover:underline">
+              {issue.title}
+            </h3>
           </Link>
           
-          <div className="flex items-center justify-between text-sm text-muted-foreground mt-4">
-            <div className="flex items-center">
-              <ThumbsUp size={16} className="mr-1" /> 
-              <span>{issue.votes}</span>
+          <div className="flex items-center justify-between">
+            <div className="mt-2 text-sm text-muted-foreground truncate max-w-[70%]">
+              <span className="inline-flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-3 h-3 mr-1"
+                >
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                {issue.location}
+              </span>
             </div>
-            <div>{timeAgo}</div>
-          </div>
-          
-          <div className="mt-2 text-sm text-muted-foreground truncate">
-            <span className="italic">Location:</span> {issue.location}
+            
+            <div className="flex items-center gap-1 bg-muted/50 px-2 py-1 rounded-full">
+              <ThumbsUp size={14} className="text-primary" /> 
+              <span className="text-xs font-medium">{issue.votes}</span>
+            </div>
           </div>
         </div>
       </CardContent>
-      
-      {showActions && (
-        <CardFooter className="flex justify-between p-4 pt-0">
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-          >
-            <Link to={`/issues/${issue.id}`}>View Details</Link>
-          </Button>
-
-          {canEdit && (
-            <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={onEdit}
-                disabled={!canEdit}
-                title="Edit issue"
-              >
-                <Edit size={16} />
-              </Button>
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={onDelete}
-                disabled={!canEdit}
-                title="Delete issue"
-                className="text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 size={16} />
-              </Button>
-            </div>
-          )}
-        </CardFooter>
-      )}
     </Card>
   );
 };
