@@ -11,6 +11,7 @@ import BrowseIssues from "./pages/BrowseIssues";
 import IssueDetails from "./pages/IssueDetails";
 import EditIssue from "./pages/EditIssue";
 import NotFound from "./pages/NotFound";
+import Analytics from "./pages/Analytics";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/issues" element={<BrowseIssues />} />
           <Route path="/issues/:id" element={<IssueDetails />} />
           <Route path="/edit-issue/:id" element={<EditIssue />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

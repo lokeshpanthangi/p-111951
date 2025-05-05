@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, BarChart3 } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 import UserMenu from "./UserMenu";
 
@@ -38,6 +38,10 @@ const Header = () => {
             </Link>
             <Link to="/report" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors">
               Report Issue
+            </Link>
+            <Link to="/analytics" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors flex items-center">
+              <BarChart3 size={16} className="mr-1" />
+              Analytics
             </Link>
           </nav>
 
