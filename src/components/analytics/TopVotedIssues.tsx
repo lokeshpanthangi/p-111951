@@ -2,21 +2,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
-import { IssueCategory, IssueStatus } from "@/types";
+import { IssueCategory, IssueStatus, Issue } from "@/types";
 import CategoryIcon from "@/components/issues/CategoryIcon";
 import StatusBadge from "@/components/issues/StatusBadge";
 import { Card } from "@/components/ui/card";
 
-interface TopVotedIssue {
-  id: string;
-  title: string;
-  votes: number;
-  category: IssueCategory;
-  status: IssueStatus;
-}
-
 interface TopVotedIssuesProps {
-  issues: TopVotedIssue[];
+  issues: Issue[];
 }
 
 const COLORS = {
@@ -31,9 +23,24 @@ const TopVotedIssues: React.FC<TopVotedIssuesProps> = ({ issues }) => {
   const navigate = useNavigate();
   const sortedData = [...issues].sort((a, b) => b.votes - a.votes);
 
-  const handleClick = (issue: TopVotedIssue) => {
+  const handleClick = (issue: Issue) => {
     navigate(`/issues/${issue.id}`);
   };
+
+  // If no data is available, show a message
+  if (sortedData.length === 0) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="h-80 flex items-center justify-center text-muted-foreground">
+          No data available
+        </div>
+        
+        <Card className="p-4 h-80 flex items-center justify-center text-muted-foreground">
+          No data available
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

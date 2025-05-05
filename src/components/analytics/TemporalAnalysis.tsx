@@ -18,6 +18,15 @@ const TemporalAnalysis: React.FC<TemporalAnalysisProps> = ({ data }) => {
     formattedDate: format(parseISO(item.date), "MMM dd")
   }));
 
+  // If no data is available, show a message
+  if (formattedData.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        No data available
+      </div>
+    );
+  }
+
   return (
     <div className="h-80 w-full">
       <ResponsiveContainer width="100%" height="100%">

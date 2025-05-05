@@ -16,6 +16,8 @@ import TopVotedIssues from "@/components/analytics/TopVotedIssues";
 import MapView from "@/components/analytics/MapView";
 import { useToast } from "@/components/ui/use-toast";
 import { IssueCategory, IssueStatus } from "@/types";
+import { getCategoryDistribution, getTemporalAnalysis, getTopVotedIssues, getIssuesForMap } from "@/lib/supabase-data";
+import { useQuery } from "@tanstack/react-query";
 
 // Type definitions for the data structures
 interface CategoryData {
@@ -48,146 +50,66 @@ interface MapIssue {
 
 const Analytics = () => {
   const [activeTab, setActiveTab] = useState("overview");
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Mock data for charts
-  const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
-  const [temporalData, setTemporalData] = useState<TemporalData[]>([]);
-  const [topVotedIssues, setTopVotedIssues] = useState<TopVotedIssue[]>([]);
-  const [mapIssues, setMapIssues] = useState<MapIssue[]>([]);
+  // Use react-query to fetch data
+  const { data: categoryData = [], isLoading: isCategoryLoading, error: categoryError } = useQuery({
+    queryKey: ['categoryDistribution'],
+    queryFn: getCategoryDistribution
+  });
 
+  const { data: temporalData = [], isLoading: isTemporalLoading, error: temporalError } = useQuery({
+    queryKey: ['temporalAnalysis'],
+    queryFn: () => getTemporalAnalysis(7)
+  });
+
+  const { data: topVotedIssues = [], isLoading: isTopVotedLoading, error: topVotedError } = useQuery({
+    queryKey: ['topVotedIssues'],
+    queryFn: () => getTopVotedIssues(5)
+  });
+
+  const { data: mapIssues = [], isLoading: isMapLoading, error: mapError } = useQuery({
+    queryKey: ['mapIssues'],
+    queryFn: getIssuesForMap
+  });
+
+  // Handle errors
   useEffect(() => {
-    const fetchAnalyticsData = async () => {
-      setIsLoading(true);
-      try {
-        // In a real app, these would be API calls
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+    if (categoryError) {
+      toast({
+        title: "Error loading category data",
+        description: "Could not load category distribution. Please try again later.",
+        variant: "destructive",
+      });
+    }
 
-        // Mock category distribution data
-        setCategoryData([
-          { category: "road", count: 42 },
-          { category: "water", count: 28 },
-          { category: "electricity", count: 35 },
-          { category: "sanitation", count: 19 },
-          { category: "other", count: 15 },
-        ]);
+    if (temporalError) {
+      toast({
+        title: "Error loading temporal data",
+        description: "Could not load temporal analysis. Please try again later.",
+        variant: "destructive",
+      });
+    }
 
-        // Mock temporal data (last 7 days)
-        const today = new Date();
-        const temporalMockData = Array.from({ length: 7 }, (_, i) => {
-          const date = new Date(today);
-          date.setDate(date.getDate() - (6 - i));
-          return {
-            date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
-            count: Math.floor(Math.random() * 10) + 5,
-          };
-        });
-        setTemporalData(temporalMockData);
+    if (topVotedError) {
+      toast({
+        title: "Error loading top voted issues",
+        description: "Could not load top voted issues. Please try again later.",
+        variant: "destructive",
+      });
+    }
 
-        // Mock top voted issues
-        setTopVotedIssues([
-          { 
-            id: "issue-1", 
-            title: "Massive pothole on Main Street causing traffic delays", 
-            votes: 47, 
-            category: "road" as IssueCategory, 
-            status: "pending" as IssueStatus 
-          },
-          { 
-            id: "issue-2", 
-            title: "Broken water main near Central Park", 
-            votes: 36, 
-            category: "water" as IssueCategory, 
-            status: "in-progress" as IssueStatus 
-          },
-          { 
-            id: "issue-3", 
-            title: "Frequent power outages in Westside neighborhood", 
-            votes: 32, 
-            category: "electricity" as IssueCategory, 
-            status: "in-progress" as IssueStatus
-          },
-          { 
-            id: "issue-4", 
-            title: "Overflowing trash bins on Pine Avenue", 
-            votes: 28, 
-            category: "sanitation" as IssueCategory, 
-            status: "resolved" as IssueStatus 
-          },
-          { 
-            id: "issue-5", 
-            title: "Dangerous intersection without proper signage", 
-            votes: 26, 
-            category: "road" as IssueCategory, 
-            status: "pending" as IssueStatus 
-          },
-        ]);
+    if (mapError) {
+      toast({
+        title: "Error loading map data",
+        description: "Could not load map data. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  }, [categoryError, temporalError, topVotedError, mapError, toast]);
 
-        // Mock map issues
-        setMapIssues([
-          { 
-            id: "map-1", 
-            title: "Pothole on Main Street", 
-            lat: 40.7128, 
-            lng: -74.006, 
-            category: "road" as IssueCategory, 
-            status: "pending" as IssueStatus, 
-            votes: 47 
-          },
-          { 
-            id: "map-2", 
-            title: "Broken water main", 
-            lat: 40.7148, 
-            lng: -74.013, 
-            category: "water" as IssueCategory, 
-            status: "in-progress" as IssueStatus, 
-            votes: 36 
-          },
-          { 
-            id: "map-3", 
-            title: "Power outages", 
-            lat: 40.7158, 
-            lng: -73.990, 
-            category: "electricity" as IssueCategory, 
-            status: "in-progress" as IssueStatus, 
-            votes: 32 
-          },
-          { 
-            id: "map-4", 
-            title: "Trash overflow", 
-            lat: 40.7218, 
-            lng: -74.001, 
-            category: "sanitation" as IssueCategory, 
-            status: "resolved" as IssueStatus, 
-            votes: 28 
-          },
-          { 
-            id: "map-5", 
-            title: "Dangerous intersection", 
-            lat: 40.7098, 
-            lng: -73.997, 
-            category: "road" as IssueCategory, 
-            status: "pending" as IssueStatus, 
-            votes: 26 
-          },
-        ]);
-
-      } catch (error) {
-        console.error("Error fetching analytics data:", error);
-        toast({
-          title: "Error loading analytics",
-          description: "Could not load analytics data. Please try again later.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchAnalyticsData();
-  }, [toast]);
+  const isLoading = isCategoryLoading || isTemporalLoading || isTopVotedLoading || isMapLoading;
 
   // Handle category filtering
   const handleCategoryClick = (category: string) => {

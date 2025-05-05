@@ -36,6 +36,15 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({
     displayName: item.category.charAt(0).toUpperCase() + item.category.slice(1),
   }));
 
+  // If no data is available, show a message
+  if (chartData.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        No data available
+      </div>
+    );
+  }
+
   return (
     <div className="h-80 w-full">
       <div className="text-center mb-2">

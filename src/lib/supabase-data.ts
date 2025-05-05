@@ -326,3 +326,108 @@ export const updateUserProfile = async (name: string) => {
   
   return data;
 };
+
+// Analytics functions
+export const getCategoryDistribution = async () => {
+  const { data, error } = await supabase
+    .from('issues')
+    .select('category, count')
+    .group('category');
+  
+  if (error) {
+    console.error("Error fetching category distribution:", error);
+    throw error;
+  }
+  
+  return data.map(item => ({
+    category: item.category as IssueCategory,
+    count: parseInt(item.count)
+  }));
+};
+
+export const getTemporalAnalysis = async (days: number = 7) => {
+  // Get today's date
+  const today = new Date();
+  const dates = [];
+  
+  // Generate array of dates for the past X days
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    dates.push({
+      date: date.toISOString().split('T')[0],
+      count: 0
+    });
+  }
+  
+  // Get issues created in the past X days
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - (days - 1));
+  startDate.setHours(0, 0, 0, 0);
+  
+  const { data, error } = await supabase
+    .from('issues')
+    .select('created_at')
+    .gte('created_at', startDate.toISOString());
+  
+  if (error) {
+    console.error("Error fetching temporal analysis:", error);
+    throw error;
+  }
+  
+  // Count issues per day
+  data.forEach(issue => {
+    const issueDate = new Date(issue.created_at).toISOString().split('T')[0];
+    const dayData = dates.find(d => d.date === issueDate);
+    if (dayData) {
+      dayData.count++;
+    }
+  });
+  
+  return dates;
+};
+
+export const getTopVotedIssues = async (limit: number = 10) => {
+  const { data, error } = await supabase
+    .from('issues')
+    .select('*')
+    .order('votes', { ascending: false })
+    .limit(limit);
+  
+  if (error) {
+    console.error("Error fetching top voted issues:", error);
+    throw error;
+  }
+  
+  return data.map(transformIssueFromDb);
+};
+
+export const getIssuesForMap = async () => {
+  // This is a mock function since we don't have actual geolocation data in the database
+  // In a real application, you would need to add latitude and longitude columns to your issues table
+  // and fetch that data
+  
+  const { data, error } = await supabase
+    .from('issues')
+    .select('*')
+    .order('votes', { ascending: false });
+  
+  if (error) {
+    console.error("Error fetching map issues:", error);
+    throw error;
+  }
+  
+  // Mock transformation to add lat/lng based on location string
+  // In a real app, you would fetch actual coordinates from the database
+  return data.map((issue, index) => ({
+    id: issue.id,
+    title: issue.title,
+    category: issue.category as IssueCategory,
+    status: issue.status as IssueStatus,
+    votes: issue.votes,
+    // Generate some mock coordinates based on the issue index
+    // In a real app, you would use actual coordinates from the database
+    lat: 40.7128 + (Math.random() * 0.02 - 0.01),
+    lng: -74.006 + (Math.random() * 0.02 - 0.01)
+  }));
+};
