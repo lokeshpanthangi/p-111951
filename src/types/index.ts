@@ -23,3 +23,10 @@ export type Issue = {
   imageUrl?: string;
   votes: number;
 };
+
+export interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string | null;
+  bio: string | null;
+}

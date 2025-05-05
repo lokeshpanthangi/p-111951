@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Tab } from "@/components/ui/tab";
@@ -11,19 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import Header from "@/components/header/Header";
 import Footer from "@/components/Footer";
 import { getUserIssues, getUserVotedIssues, updateUserProfile } from "@/lib/supabase-data";
-import { Issue } from "@/types";
+import { Issue, UserProfile } from "@/types";
 import IssueList from "@/components/issues/IssueList";
 import { Pencil, Check, X } from "lucide-react";
 import { getUserProfile } from "@/lib/supabase-data";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-
-interface UserProfile {
-  id: string;
-  name: string | null;
-  email: string | null;
-  bio: string | null;
-}
 
 const Profile = () => {
   const { user } = useAuth();
