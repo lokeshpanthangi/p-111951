@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Issue, IssueCategory } from "@/types";
+import { Issue, IssueCategory, IssueStatus } from "@/types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -25,11 +25,13 @@ import {
 } from "@/components/ui/select";
 import ImageDropzone from "./ImageDropzone";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 interface IssueFormProps {
   onSubmit: (data: IssueFormData) => void;
   initialData?: Issue;
   isSubmitting?: boolean;
+  showStatusField?: boolean;
 }
 
 // Form schema for validation
@@ -47,14 +49,21 @@ const formSchema = z.object({
     .string()
     .min(5, { message: "Location must be at least 5 characters" })
     .max(200, { message: "Location cannot exceed 200 characters" }),
+  status: z.enum(["pending", "in-progress", "resolved"]).optional(),
 });
 
 export type IssueFormData = z.infer<typeof formSchema> & {
   imageFile: File | null;
 };
 
-const IssueForm = ({ onSubmit, initialData, isSubmitting = false }: IssueFormProps) => {
+const IssueForm = ({ 
+  onSubmit, 
+  initialData, 
+  isSubmitting = false,
+  showStatusField = false,
+}: IssueFormProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   // Initialize form with react-hook-form
@@ -66,12 +75,14 @@ const IssueForm = ({ onSubmit, initialData, isSubmitting = false }: IssueFormPro
           description: initialData.description,
           category: initialData.category,
           location: initialData.location,
+          status: initialData.status,
         }
       : {
           title: "",
           description: "",
           category: "other" as IssueCategory,
           location: "",
+          status: "pending" as IssueStatus,
         },
   });
 
@@ -85,6 +96,9 @@ const IssueForm = ({ onSubmit, initialData, isSubmitting = false }: IssueFormPro
   const handleImageSelect = (file: File | null) => {
     setImageFile(file);
   };
+
+  // Check if user is creator when editing
+  const isOwner = initialData ? user?.id === initialData.userId : true;
 
   return (
     <Form {...form}>
@@ -162,6 +176,37 @@ const IssueForm = ({ onSubmit, initialData, isSubmitting = false }: IssueFormPro
           )}
         />
 
+        {(showStatusField && isOwner) && (
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="in-progress">In Progress</SelectItem>
+                    <SelectItem value="resolved">Resolved</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Update the current status of this issue.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <FormField
           control={form.control}
           name="description"
@@ -196,13 +241,19 @@ const IssueForm = ({ onSubmit, initialData, isSubmitting = false }: IssueFormPro
           </p>
         </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting
-            ? "Submitting..."
-            : initialData
-            ? "Update Issue"
-            : "Submit Issue"}
-        </Button>
+        {isOwner ? (
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting
+              ? "Submitting..."
+              : initialData
+              ? "Update Issue"
+              : "Submit Issue"}
+          </Button>
+        ) : (
+          <p className="text-sm text-destructive text-center">
+            Only the creator of this issue can edit it.
+          </p>
+        )}
       </form>
     </Form>
   );

@@ -94,7 +94,7 @@ export const createIssue = async (issueData: Partial<Issue>, imageFile?: File): 
       description: issueData.description || "",
       category: issueData.category as IssueCategory || "other",
       location: issueData.location || "",
-      status: "pending",
+      status: issueData.status as IssueStatus || "pending",
       user_id: session.session.user.id,
       image_url: imageUrl
     })
@@ -161,6 +161,7 @@ export const updateIssue = async (id: string, issueData: Partial<Issue>, imageFi
       description: issueData.description,
       category: issueData.category,
       location: issueData.location,
+      status: issueData.status,
       image_url: imageUrl
     })
     .eq('id', id)
@@ -305,7 +306,7 @@ export const getUserProfile = async (userId: string) => {
 };
 
 // Function to update user profile
-export const updateUserProfile = async (name: string) => {
+export const updateUserProfile = async (profileData: { name?: string, bio?: string }) => {
   const { data: session } = await supabase.auth.getSession();
   
   if (!session.session?.user) {
@@ -314,7 +315,7 @@ export const updateUserProfile = async (name: string) => {
   
   const { data, error } = await supabase
     .from('profiles')
-    .update({ name })
+    .update(profileData)
     .eq('id', session.session.user.id)
     .select()
     .single();
@@ -327,9 +328,46 @@ export const updateUserProfile = async (name: string) => {
   return data;
 };
 
+// Function to get user's voted issues
+export const getUserVotedIssues = async (): Promise<Issue[]> => {
+  const { data: session } = await supabase.auth.getSession();
+  
+  if (!session.session?.user) {
+    throw new Error("User not authenticated");
+  }
+  
+  const { data, error } = await supabase
+    .from('issue_votes')
+    .select('issue_id')
+    .eq('user_id', session.session.user.id);
+  
+  if (error) {
+    console.error("Error fetching user votes:", error);
+    throw error;
+  }
+  
+  if (!data || data.length === 0) {
+    return [];
+  }
+  
+  const issueIds = data.map(vote => vote.issue_id);
+  
+  const { data: issues, error: issuesError } = await supabase
+    .from('issues')
+    .select('*')
+    .in('id', issueIds)
+    .order('created_at', { ascending: false });
+  
+  if (issuesError) {
+    console.error("Error fetching voted issues:", issuesError);
+    throw issuesError;
+  }
+  
+  return issues.map(transformIssueFromDb);
+};
+
 // Analytics functions
 export const getCategoryDistribution = async () => {
-  // Fix: Replace the group() method with a different approach
   const { data, error } = await supabase
     .from('issues')
     .select('category');

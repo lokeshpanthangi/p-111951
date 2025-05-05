@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,73 +8,89 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/context/AuthContext";
-import { getUserProfile } from "@/lib/supabase-data";
+import { useToast } from "@/components/ui/use-toast";
 
-interface UserMenuProps {
-  onLogout: () => void;
-}
+const UserMenu = () => {
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-const UserMenu = ({ onLogout }: UserMenuProps) => {
-  const [open, setOpen] = useState(false);
-  const { user } = useAuth();
-  const [profile, setProfile] = useState<{ name: string | null, email: string | null } | null>(null);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (user) {
-        try {
-          const data = await getUserProfile(user.id);
-          setProfile(data);
-        } catch (error) {
-          console.error("Error fetching profile:", error);
-        }
-      }
-    };
-    
-    fetchProfile();
-  }, [user]);
-
-  const handleLogout = () => {
-    setOpen(false);
-    onLogout();
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await signOut();
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully.",
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast({
+        title: "Logout failed",
+        description: "There was a problem logging you out. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
+  if (!user) {
+    return (
+      <div className="flex gap-2">
+        <Button variant="outline" asChild>
+          <Link to="/">Log in</Link>
+        </Button>
+        <Button asChild className="hidden sm:inline-flex">
+          <Link to="/">Sign up</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  // Get initials for the avatar
   const getInitials = () => {
-    if (profile?.name) {
-      return profile.name.split(' ').map(n => n[0]).join('').toUpperCase();
-    }
-    return user?.email?.charAt(0).toUpperCase() || 'U';
+    const email = user.email || "";
+    return email.substring(0, 2).toUpperCase();
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar>
-            <AvatarFallback className="bg-primary/10 text-primary">{getInitials()}</AvatarFallback>
+            <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end">
-        <div className="flex items-center justify-start gap-2 p-2">
-          <div className="flex flex-col space-y-0.5">
-            <p className="text-sm font-medium">{profile?.name || 'User'}</p>
-            <p className="text-xs text-muted-foreground">{profile?.email || user?.email}</p>
-          </div>
+      <DropdownMenuContent align="end">
+        <div className="px-2 py-1.5 text-sm font-medium text-center">
+          {user.email}
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link to="/profile" className="cursor-pointer">Profile</Link>
+          <Link to="/profile">Profile</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/my-issues" className="cursor-pointer">My Issues</Link>
+          <Link to="/my-issues">My Issues</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/report">Report Issue</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/analytics">Analytics</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-          Log out
+        <DropdownMenuItem 
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+        >
+          {isLoggingOut ? "Logging out..." : "Log out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

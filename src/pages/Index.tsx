@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -6,14 +7,35 @@ import Header from "@/components/header/Header";
 import Footer from "@/components/Footer";
 import AuthForm from "@/components/auth/AuthForm";
 import { useAuth } from "@/context/AuthContext";
+import { getIssues } from "@/lib/supabase-data";
+import { Issue } from "@/types";
+import StatusBadge from "@/components/issues/StatusBadge";
+import CategoryIcon from "@/components/issues/CategoryIcon";
 
 const Index = () => {
   const { user, isLoading } = useAuth();
   const location = useLocation();
+  const [recentIssues, setRecentIssues] = useState<Issue[]>([]);
+  const [isLoadingIssues, setIsLoadingIssues] = useState(true);
   
   const handleAuthSuccess = () => {
     // This is handled by the AuthContext now
   };
+
+  useEffect(() => {
+    const fetchRecentIssues = async () => {
+      try {
+        const issues = await getIssues();
+        setRecentIssues(issues.slice(0, 3)); // Only get the 3 most recent issues
+      } catch (error) {
+        console.error("Error fetching recent issues:", error);
+      } finally {
+        setIsLoadingIssues(false);
+      }
+    };
+
+    fetchRecentIssues();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -110,52 +132,70 @@ const Index = () => {
               </Button>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-                <div className="h-48 bg-gray-200 dark:bg-gray-700"></div>
-                <div className="p-4">
-                  <span className="inline-block px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium mb-2">
-                    Road
-                  </span>
-                  <h3 className="text-lg font-semibold mb-2">Pothole on Main Street</h3>
-                  <p className="text-sm text-muted-foreground mb-3">Main Street & Oak Avenue</p>
-                  <div className="flex justify-between text-sm">
-                    <span>12 votes</span>
-                    <span>2 days ago</span>
+            {isLoadingIssues ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+                    <div className="h-48 bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+                    <div className="p-4">
+                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-24 animate-pulse mb-2"></div>
+                      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse mb-2"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 animate-pulse mb-3"></div>
+                      <div className="flex justify-between text-sm">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20 animate-pulse"></div>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-              
-              <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-                <div className="h-48 bg-gray-200 dark:bg-gray-700"></div>
-                <div className="p-4">
-                  <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium mb-2">
-                    Water
-                  </span>
-                  <h3 className="text-lg font-semibold mb-2">Broken Water Main</h3>
-                  <p className="text-sm text-muted-foreground mb-3">27 Elm Street</p>
-                  <div className="flex justify-between text-sm">
-                    <span>8 votes</span>
-                    <span>1 week ago</span>
+            ) : recentIssues.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recentIssues.map((issue) => (
+                  <div key={issue.id} className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+                    <div className="h-48 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
+                      {issue.imageUrl ? (
+                        <img 
+                          src={issue.imageUrl} 
+                          alt={issue.title} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <CategoryIcon category={issue.category} size={48} />
+                        </div>
+                      )}
+                      <div className="absolute top-2 right-2">
+                        <StatusBadge status={issue.status} size="sm" />
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <span className="inline-block px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full text-xs font-medium mb-2 capitalize">
+                        {issue.category}
+                      </span>
+                      <Link to={`/issues/${issue.id}`}>
+                        <h3 className="text-lg font-semibold mb-2 hover:text-primary hover:underline">
+                          {issue.title}
+                        </h3>
+                      </Link>
+                      <p className="text-sm text-muted-foreground mb-3">{issue.location}</p>
+                      <div className="flex justify-between text-sm">
+                        <span>{issue.votes} votes</span>
+                        <span>{new Date(issue.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-              
-              <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
-                <div className="h-48 bg-gray-200 dark:bg-gray-700"></div>
-                <div className="p-4">
-                  <span className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium mb-2">
-                    Sanitation
-                  </span>
-                  <h3 className="text-lg font-semibold mb-2">Overflowing Trash Containers</h3>
-                  <p className="text-sm text-muted-foreground mb-3">Cedar Park</p>
-                  <div className="flex justify-between text-sm">
-                    <span>5 votes</span>
-                    <span>2 weeks ago</span>
-                  </div>
-                </div>
+            ) : (
+              <div className="bg-white dark:bg-gray-900 rounded-lg p-8 text-center">
+                <h3 className="text-xl font-medium mb-2">No issues reported yet</h3>
+                <p className="mb-4 text-muted-foreground">Be the first to report an issue in your community!</p>
+                <Button asChild>
+                  <Link to="/report">Report an Issue</Link>
+                </Button>
               </div>
-            </div>
+            )}
           </div>
         </section>
         

@@ -12,6 +12,7 @@ import IssueDetails from "./pages/IssueDetails";
 import EditIssue from "./pages/EditIssue";
 import NotFound from "./pages/NotFound";
 import Analytics from "./pages/Analytics";
+import Profile from "./pages/Profile";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
 import { AuthProvider } from "./context/AuthContext";
 import RequireAuth from "./components/auth/RequireAuth";
@@ -46,6 +47,11 @@ const App = () => (
                 </RequireAuth>
               } />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/profile" element={
+                <RequireAuth>
+                  <Profile />
+                </RequireAuth>
+              } />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

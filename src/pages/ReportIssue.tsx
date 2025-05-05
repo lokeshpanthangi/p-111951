@@ -23,6 +23,7 @@ const ReportIssue = () => {
           description: data.description,
           category: data.category,
           location: data.location,
+          status: data.status || "pending",
         }, 
         data.imageFile || undefined
       );
@@ -71,7 +72,8 @@ const ReportIssue = () => {
               <CardContent>
                 <IssueForm 
                   onSubmit={handleSubmit} 
-                  isSubmitting={isSubmitting} 
+                  isSubmitting={isSubmitting}
+                  showStatusField={true}
                 />
               </CardContent>
             </Card>
@@ -84,9 +86,9 @@ const ReportIssue = () => {
                 What happens next?
               </h3>
               <p className="text-sm text-muted-foreground">
-                After submitting your report, it will be reviewed and assigned a status of "Pending". 
-                As your issue is addressed, its status will be updated to "In Progress" and eventually "Resolved". 
-                You can track the progress of your reported issues in your "My Issues" dashboard.
+                After submitting your report, it will be assigned the status you've chosen. If left as "Pending", 
+                it will be reviewed by community moderators. You can track the progress of your reported issues 
+                in your "My Issues" dashboard and can update its status anytime.
               </p>
             </div>
           </div>

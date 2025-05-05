@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { X, Upload, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,13 @@ interface ImageDropzoneProps {
 const ImageDropzone = ({ onImageSelect, existingImageUrl }: ImageDropzoneProps) => {
   const [preview, setPreview] = useState<string | null>(existingImageUrl || null);
   const { toast } = useToast();
+
+  // Set the initial preview if there's an existing image
+  useEffect(() => {
+    if (existingImageUrl) {
+      setPreview(existingImageUrl);
+    }
+  }, [existingImageUrl]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
@@ -29,11 +36,12 @@ const ImageDropzone = ({ onImageSelect, existingImageUrl }: ImageDropzoneProps) 
       return;
     }
 
-    onImageSelect(file);
-    
     // Create preview
     const objectUrl = URL.createObjectURL(file);
     setPreview(objectUrl);
+
+    // Notify parent component about the file
+    onImageSelect(file);
     
     // Clean up the preview URL when component unmounts
     return () => URL.revokeObjectURL(objectUrl);
@@ -75,9 +83,7 @@ const ImageDropzone = ({ onImageSelect, existingImageUrl }: ImageDropzoneProps) 
       ) : (
         <div 
           {...getRootProps()} 
-          className={`drop-area cursor-pointer transition-colors ${
-            isDragActive ? "drop-area-active" : ""
-          }`}
+          className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-md p-6 flex flex-col items-center justify-center transition-colors hover:border-primary/50 cursor-pointer"
         >
           <input {...getInputProps()} />
           <div className="flex flex-col items-center gap-2 text-center">
