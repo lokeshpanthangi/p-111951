@@ -38,7 +38,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-civic-blue">Issue<span className="text-civic-green">Radar</span></span>
+              <span className="text-2xl font-bold text-civic-blue">Civic<span className="text-civic-green">Sync</span></span>
             </Link>
           </div>
           
@@ -49,17 +49,21 @@ const Header = () => {
             <Link to="/issues" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors">
               Browse Issues
             </Link>
-            <Link to="/report" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors">
-              Report Issue
-            </Link>
-            <Link to="/my-issues" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors flex items-center">
-              <FileText size={16} className="mr-1" />
-              My Issues
-            </Link>
             <Link to="/analytics" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors flex items-center">
               <BarChart3 size={16} className="mr-1" />
               Analytics
             </Link>
+            {user && (
+              <>
+                <Link to="/report" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors animate-fade-in">
+                  Report Issue
+                </Link>
+                <Link to="/my-issues" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors flex items-center animate-fade-in">
+                  <FileText size={16} className="mr-1" />
+                  My Issues
+                </Link>
+              </>
+            )}
           </nav>
 
           <div className="flex items-center space-x-2">

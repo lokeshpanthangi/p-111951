@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -134,7 +133,7 @@ const Analytics = () => {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <Card>
                   <CardHeader>
                     <CardTitle>Category Distribution</CardTitle>

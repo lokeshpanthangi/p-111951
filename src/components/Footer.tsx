@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -7,7 +6,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="font-semibold text-lg mb-4">About IssueRadar</h3>
+            <h3 className="font-semibold text-lg mb-4">About CivicSync</h3>
             <p className="text-sm text-muted-foreground">
               A platform empowering citizens to report and track civic issues in their communities.
             </p>
@@ -78,7 +77,7 @@ const Footer = () => {
         </div>
         
         <div className="mt-8 pt-6 border-t text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} IssueRadar. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} CivicSync. All rights reserved.</p>
         </div>
       </div>
     </footer>

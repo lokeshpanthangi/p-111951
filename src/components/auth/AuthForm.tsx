@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,7 +52,7 @@ const AuthForm = ({ onSuccess }: AuthFormProps) => {
     <Card className="mx-auto max-w-md w-full">
       <Tabs defaultValue="login">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Welcome to IssueRadar</CardTitle>
+          <CardTitle className="text-2xl text-center">Welcome to CivicSync</CardTitle>
           <CardDescription className="text-center">
             Join our community to report and track civic issues
           </CardDescription>

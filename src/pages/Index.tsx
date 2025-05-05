@@ -60,7 +60,7 @@ const Index = () => {
                   Report civic issues in your community
                 </h1>
                 <p className="mt-4 text-lg text-muted-foreground max-w-md mx-auto md:mx-0">
-                  IssueRadar connects citizens with local authorities to resolve problems 
+                  CivicSync connects citizens with local authorities to resolve problems 
                   and improve neighborhoods together.
                 </p>
                 <div className="mt-8 flex flex-col md:flex-row gap-4 justify-center md:justify-start">
