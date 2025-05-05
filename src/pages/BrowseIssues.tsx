@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/header/Header";
 import Footer from "@/components/Footer";
-import { getIssues, voteOnIssue } from "@/lib/mock-data";
+import { getIssues, voteOnIssue, hasVotedOnIssue } from "@/lib/supabase-data";
 import { Issue, IssueCategory, IssueStatus } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { 
@@ -32,15 +32,14 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { debounce } from "@/lib/utils";
 import IssueCard from "@/components/issues/IssueCard";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Sort options
 type SortOption = "newest" | "votes";
 
 const BrowseIssues = () => {
-  const [issues, setIssues] = useState<Issue[]>([]);
   const [filteredIssues, setFilteredIssues] = useState<Issue[]>([]);
   const [displayedIssues, setDisplayedIssues] = useState<Issue[]>([]);
-  const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState<IssueCategory | "all">("all");
   const [statusFilter, setStatusFilter] = useState<IssueStatus | "all">("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
@@ -52,23 +51,46 @@ const BrowseIssues = () => {
   const itemsPerPage = 12;
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch real issues from Supabase using React Query
+  const { data: issues = [], isLoading, isError } = useQuery({
+    queryKey: ['issues'],
+    queryFn: getIssues
+  });
 
   // Handle voting
   const handleVote = async (issueId: string) => {
     try {
-      const updatedIssue = await voteOnIssue(issueId);
-      if (updatedIssue) {
-        setIssues(prev => prev.map(issue => 
-          issue.id === issueId ? { ...issue, votes: issue.votes + 1 } : issue
-        ));
-        
-        setFilteredIssues(prev => prev.map(issue => 
-          issue.id === issueId ? { ...issue, votes: issue.votes + 1 } : issue
-        ));
+      // First check if the user has already voted
+      const hasVoted = await hasVotedOnIssue(issueId);
+      if (hasVoted) {
+        toast({
+          title: "Already voted",
+          description: "You've already voted on this issue",
+          variant: "default",
+        });
+        return;
       }
+
+      // Process the vote
+      await voteOnIssue(issueId);
+
+      // Invalidate the issues query to refresh data
+      queryClient.invalidateQueries({queryKey: ['issues']});
+      
+      toast({
+        title: "Vote recorded",
+        description: "Your vote has been counted!",
+        variant: "success",
+      });
     } catch (error) {
       console.error("Error voting:", error);
-      throw error;
+      toast({
+        title: "Error voting",
+        description: error instanceof Error ? error.message : "Could not record your vote. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -155,31 +177,11 @@ const BrowseIssues = () => {
     applyFilters(issues, "all", "all", "newest", "");
   };
 
-  // Fetch issues on mount
+  // Apply filters when issues or filter settings change
   useEffect(() => {
-    const fetchIssues = async () => {
-      try {
-        const data = await getIssues();
-        setIssues(data);
-        applyFilters(data, categoryFilter, statusFilter, sortBy, searchTerm);
-      } catch (error) {
-        console.error("Error fetching issues:", error);
-        toast({
-          title: "Error loading issues",
-          description: "There was a problem loading the issues. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchIssues();
-  }, [toast]);
-
-  // Apply filters when dependencies change
-  useEffect(() => {
-    applyFilters(issues, categoryFilter, statusFilter, sortBy, searchTerm);
+    if (issues && issues.length > 0) {
+      applyFilters(issues, categoryFilter, statusFilter, sortBy, searchTerm);
+    }
   }, [issues, categoryFilter, statusFilter, sortBy]);
 
   // Update displayed issues when page changes
@@ -392,17 +394,17 @@ const BrowseIssues = () => {
             <p className="text-sm text-muted-foreground flex items-center gap-2">
               <Clock className="h-4 w-4" />
               Showing {filteredIssues.length} {filteredIssues.length === 1 ? "issue" : "issues"}
-              {loading && (
+              {isLoading && (
                 <span className="inline-flex items-center ml-2">
                   <div className="animate-spin h-3 w-3 border-2 border-primary border-r-transparent rounded-full mr-1"></div>
-                  Updating...
+                  Loading...
                 </span>
               )}
             </p>
           </div>
           
           {/* Issue Grid */}
-          {loading ? (
+          {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="border rounded-lg overflow-hidden">
@@ -419,6 +421,17 @@ const BrowseIssues = () => {
                 </div>
               ))}
             </div>
+          ) : isError ? (
+            <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-900 rounded-lg border border-dashed">
+              <div className="h-20 w-20 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mb-4">
+                <X className="h-10 w-10 text-red-500" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Error Loading Issues</h3>
+              <p className="text-center text-muted-foreground mb-6">
+                There was a problem loading the issues. Please try again later.
+              </p>
+              <Button onClick={() => queryClient.invalidateQueries({queryKey: ['issues']})}>Retry</Button>
+            </div>
           ) : filteredIssues.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-900 rounded-lg border border-dashed">
               <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -426,9 +439,18 @@ const BrowseIssues = () => {
               </div>
               <h3 className="text-xl font-semibold mb-2">No Issues Found</h3>
               <p className="text-center text-muted-foreground mb-6">
-                We couldn't find any issues matching your current filters.
+                {searchTerm || categoryFilter !== "all" || statusFilter !== "all" ?
+                  "We couldn't find any issues matching your current filters." :
+                  "There aren't any issues reported yet. Be the first to report one!"
+                }
               </p>
-              <Button onClick={resetFilters}>Reset All Filters</Button>
+              {(searchTerm || categoryFilter !== "all" || statusFilter !== "all") ? (
+                <Button onClick={resetFilters}>Reset All Filters</Button>
+              ) : (
+                <Button asChild>
+                  <a href="/report">Report an Issue</a>
+                </Button>
+              )}
             </div>
           ) : (
             <>

@@ -14,19 +14,22 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import VoteButton from "./VoteButton";
 
 interface IssueListProps {
   issues: Issue[];
   isUserOwned?: boolean;
   onEdit?: (issue: Issue) => void;
   onDelete?: (issueId: string) => void;
+  onVote?: (issueId: string) => Promise<void>;
 }
 
 const IssueList = ({ 
   issues, 
   isUserOwned = false,
   onEdit,
-  onDelete 
+  onDelete,
+  onVote 
 }: IssueListProps) => {
   const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -96,6 +99,7 @@ const IssueList = ({
             showActions={isUserOwned}
             onEdit={onEdit ? () => onEdit(issue) : undefined}
             onDelete={onDelete ? () => handleDelete(issue) : undefined}
+            onVote={onVote ? () => onVote(issue.id) : undefined}
           />
         ))}
       </div>

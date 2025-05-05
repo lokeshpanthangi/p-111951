@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import StatusBadge from "./StatusBadge";
 import CategoryIcon from "./CategoryIcon";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface IssueCardProps {
   issue: Issue;
@@ -15,10 +16,33 @@ interface IssueCardProps {
   onClick?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  onVote?: () => void;
 }
 
-const IssueCard = ({ issue, showActions = false, onClick, onEdit, onDelete }: IssueCardProps) => {
+const IssueCard = ({ 
+  issue, 
+  showActions = false, 
+  onClick, 
+  onEdit, 
+  onDelete,
+  onVote
+}: IssueCardProps) => {
+  const [isVoting, setIsVoting] = useState(false);
   const timeAgo = formatDistanceToNow(issue.createdAt, { addSuffix: true });
+  
+  const handleVote = async (e: React.MouseEvent) => {
+    if (!onVote) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setIsVoting(true);
+    try {
+      await onVote();
+    } finally {
+      setIsVoting(false);
+    }
+  };
   
   return (
     <Card 
@@ -88,10 +112,18 @@ const IssueCard = ({ issue, showActions = false, onClick, onEdit, onDelete }: Is
               </span>
             </div>
             
-            <div className="flex items-center gap-1 bg-muted/50 px-2 py-1 rounded-full">
-              <ThumbsUp size={14} className="text-primary" /> 
+            <button
+              onClick={handleVote}
+              disabled={isVoting || !onVote}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded-full transition-colors",
+                onVote ? "hover:bg-primary/10 cursor-pointer" : "cursor-default",
+                "bg-muted/50"
+              )}
+            >
+              <ThumbsUp size={14} className={cn("text-primary", isVoting && "animate-pulse")} /> 
               <span className="text-xs font-medium">{issue.votes}</span>
-            </div>
+            </button>
           </div>
 
           {showActions && onEdit && onDelete && (
