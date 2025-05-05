@@ -301,13 +301,12 @@ export const getUserProfile = async (userId: string): Promise<UserProfile> => {
     throw error;
   }
   
-  // Cast the data to include bio, even if it's null
+  // Return only the properties defined in the UserProfile interface
   return {
     id: data.id,
     name: data.name,
     email: data.email,
-    bio: data.bio as string | null,
-    created_at: data.created_at
+    bio: data.bio as string | null
   };
 };
 
@@ -331,13 +330,12 @@ export const updateUserProfile = async (profileData: { name?: string, bio?: stri
     throw error;
   }
   
-  // Cast the data to include bio, even if it's null
+  // Return only the properties defined in the UserProfile interface
   return {
     id: data.id,
     name: data.name,
     email: data.email,
-    bio: data.bio as string | null,
-    created_at: data.created_at
+    bio: data.bio as string | null
   };
 };
 
