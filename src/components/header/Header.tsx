@@ -1,0 +1,80 @@
+
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
+import MobileMenu from "./MobileMenu";
+import UserMenu from "./UserMenu";
+
+const Header = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Mock auth state
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  // Mock login/logout functionality
+  const handleAuth = () => {
+    setIsLoggedIn(!isLoggedIn);
+  };
+
+  return (
+    <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-900 border-b shadow-sm">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center">
+              <span className="text-2xl font-bold text-civic-blue">Issue<span className="text-civic-green">Radar</span></span>
+            </Link>
+          </div>
+          
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link to="/" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors">
+              Home
+            </Link>
+            <Link to="/issues" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors">
+              Browse Issues
+            </Link>
+            <Link to="/report" className="text-gray-700 dark:text-gray-200 hover:text-civic-blue transition-colors">
+              Report Issue
+            </Link>
+          </nav>
+
+          <div className="flex items-center">
+            {isLoggedIn ? (
+              <UserMenu onLogout={handleAuth} />
+            ) : (
+              <div className="hidden md:flex items-center space-x-4">
+                <Button variant="outline" onClick={handleAuth}>
+                  Log in
+                </Button>
+                <Button onClick={handleAuth}>Sign up</Button>
+              </div>
+            )}
+            
+            <div className="md:hidden ml-4">
+              <Button 
+                variant="ghost" 
+                onClick={toggleMobileMenu}
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {mobileMenuOpen && (
+        <MobileMenu 
+          isLoggedIn={isLoggedIn} 
+          onAuth={handleAuth} 
+          onClose={() => setMobileMenuOpen(false)}
+        />
+      )}
+    </header>
+  );
+};
+
+export default Header;
