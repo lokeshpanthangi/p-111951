@@ -4,14 +4,15 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recha
 import { IssueCategory } from "@/types";
 import CategoryIcon from "@/components/issues/CategoryIcon";
 
-interface CategoryData {
-  [key: string]: number;
+interface CategoryDataItem {
+  category: IssueCategory;
+  count: number;
 }
 
 interface CategoryDistributionProps {
-  data: CategoryData;
+  data: CategoryDataItem[];
   onCategoryClick?: (category: string) => void;
-  selectedCategory: string | null;
+  selectedCategory?: string | null;
 }
 
 const COLORS = {
@@ -25,14 +26,14 @@ const COLORS = {
 const CategoryDistribution: React.FC<CategoryDistributionProps> = ({
   data,
   onCategoryClick,
-  selectedCategory,
+  selectedCategory = null,
 }) => {
-  const totalIssues = Object.values(data).reduce((sum, count) => sum + count, 0);
+  const totalIssues = data.reduce((sum, item) => sum + item.count, 0);
   
-  const chartData = Object.entries(data).map(([name, value]) => ({
-    name,
-    value,
-    displayName: name.charAt(0).toUpperCase() + name.slice(1),
+  const chartData = data.map((item) => ({
+    name: item.category,
+    value: item.count,
+    displayName: item.category.charAt(0).toUpperCase() + item.category.slice(1),
   }));
 
   return (

@@ -2,7 +2,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
-import { Issue, IssueCategory } from "@/types";
+import { IssueCategory, IssueStatus } from "@/types";
 import CategoryIcon from "@/components/issues/CategoryIcon";
 import StatusBadge from "@/components/issues/StatusBadge";
 import { Card } from "@/components/ui/card";
@@ -12,11 +12,11 @@ interface TopVotedIssue {
   title: string;
   votes: number;
   category: IssueCategory;
-  status: string;
+  status: IssueStatus;
 }
 
 interface TopVotedIssuesProps {
-  data: TopVotedIssue[];
+  issues: TopVotedIssue[];
 }
 
 const COLORS = {
@@ -27,9 +27,9 @@ const COLORS = {
   other: "#94A3B8",    // gray
 };
 
-const TopVotedIssues: React.FC<TopVotedIssuesProps> = ({ data }) => {
+const TopVotedIssues: React.FC<TopVotedIssuesProps> = ({ issues }) => {
   const navigate = useNavigate();
-  const sortedData = [...data].sort((a, b) => b.votes - a.votes);
+  const sortedData = [...issues].sort((a, b) => b.votes - a.votes);
 
   const handleClick = (issue: TopVotedIssue) => {
     navigate(`/issues/${issue.id}`);
@@ -113,7 +113,7 @@ const TopVotedIssues: React.FC<TopVotedIssuesProps> = ({ data }) => {
                 <td className="text-center font-medium">{issue.votes}</td>
                 <td className="text-center">
                   <div className="flex justify-center py-1">
-                    <StatusBadge status={issue.status as any} size="sm" />
+                    <StatusBadge status={issue.status} size="sm" />
                   </div>
                 </td>
               </tr>

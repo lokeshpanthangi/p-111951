@@ -14,7 +14,8 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
   className = ""
 }) => {
   const getStatusClasses = () => {
-    const baseClasses = "status-badge";
+    const baseClasses = "status-badge rounded-full inline-flex items-center justify-center font-medium";
+    
     const sizeClasses = {
       sm: "text-xs px-1.5 py-0.5",
       md: "text-xs px-2.5 py-1",
@@ -22,9 +23,9 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
     };
     
     const statusClasses = {
-      "pending": "status-badge-pending",
-      "in-progress": "status-badge-in-progress",
-      "resolved": "status-badge-resolved"
+      "pending": "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500",
+      "in-progress": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-500",
+      "resolved": "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500"
     };
     
     return `${baseClasses} ${statusClasses[status]} ${sizeClasses[size]} ${className}`;

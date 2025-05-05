@@ -49,6 +49,7 @@ interface MapIssue {
 const Analytics = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Mock data for charts
@@ -188,6 +189,11 @@ const Analytics = () => {
     fetchAnalyticsData();
   }, [toast]);
 
+  // Handle category filtering
+  const handleCategoryClick = (category: string) => {
+    setSelectedCategory(prev => prev === category ? null : category);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -220,7 +226,11 @@ const Analytics = () => {
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                       </div>
                     ) : (
-                      <CategoryDistribution data={categoryData} />
+                      <CategoryDistribution 
+                        data={categoryData} 
+                        onCategoryClick={handleCategoryClick}
+                        selectedCategory={selectedCategory}
+                      />
                     )}
                   </CardContent>
                 </Card>
@@ -271,7 +281,11 @@ const Analytics = () => {
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                     </div>
                   ) : (
-                    <MapView issues={mapIssues} />
+                    <MapView 
+                      issues={mapIssues}
+                      selectedCategory={selectedCategory}
+                      setSelectedCategory={setSelectedCategory}
+                    />
                   )}
                 </CardContent>
               </Card>

@@ -18,8 +18,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import StatusBadge from "@/components/issues/StatusBadge";
 import CategoryIcon from "@/components/issues/CategoryIcon";
-import { IssueCategory } from "@/types";
-import { debounce } from "@/lib/utils";
+import { IssueCategory, IssueStatus } from "@/types";
+
+// Helper function for debouncing
+const debounce = <F extends (...args: any[]) => any>(
+  fn: F,
+  delay: number
+) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return function(this: any, ...args: Parameters<F>) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), delay);
+  };
+};
 
 // Mock component for an actual map integration
 const MapPlaceholder = ({ 
@@ -52,7 +63,7 @@ interface MapIssue {
   lat: number;
   lng: number;
   category: IssueCategory;
-  status: string;
+  status: IssueStatus;
   votes: number;
 }
 
@@ -308,7 +319,7 @@ const MapView: React.FC<MapViewProps> = ({
                     <div className="flex-1">
                       <h4 className="font-medium text-sm line-clamp-1">{issue.title}</h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <StatusBadge status={issue.status as any} size="sm" />
+                        <StatusBadge status={issue.status} size="sm" />
                         <span className="text-xs text-muted-foreground">
                           {issue.votes} votes
                         </span>
@@ -396,7 +407,7 @@ const MapView: React.FC<MapViewProps> = ({
                     <CategoryIcon category={selectedIssue.category} />
                     <div>
                       <h3 className="font-medium line-clamp-2">{selectedIssue.title}</h3>
-                      <StatusBadge status={selectedIssue.status as any} size="sm" className="mt-1" />
+                      <StatusBadge status={selectedIssue.status} size="sm" className="mt-1" />
                     </div>
                   </div>
                   <Button
