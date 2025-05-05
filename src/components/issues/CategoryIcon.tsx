@@ -1,6 +1,6 @@
 
 import { IssueCategory } from "@/types";
-import { Road, Droplet, Trash2, Zap, HelpCircle } from "lucide-react";
+import { RoadSignal, Droplet, Trash2, Zap, HelpCircle } from "lucide-react";
 
 interface CategoryIconProps {
   category: IssueCategory;
@@ -11,7 +11,7 @@ const CategoryIcon = ({ category, size = 18 }: CategoryIconProps) => {
   const renderIcon = () => {
     switch (category) {
       case "road":
-        return <Road size={size} className="text-amber-600" />;
+        return <RoadSignal size={size} className="text-amber-600" />;
       case "water":
         return <Droplet size={size} className="text-blue-500" />;
       case "sanitation":
