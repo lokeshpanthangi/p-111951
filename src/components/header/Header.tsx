@@ -16,11 +16,6 @@ const Header = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  // Handle logout
-  const handleLogout = async () => {
-    await signOut();
-  };
-
   return (
     <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-900 border-b shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,7 +52,7 @@ const Header = () => {
             {isLoading ? (
               <div className="h-10 w-10 rounded-full bg-muted animate-pulse"></div>
             ) : user ? (
-              <UserMenu onLogout={handleLogout} />
+              <UserMenu />
             ) : (
               <div className="hidden md:flex items-center space-x-4">
                 <Button variant="outline" asChild>
@@ -85,7 +80,7 @@ const Header = () => {
       {mobileMenuOpen && (
         <MobileMenu 
           isLoggedIn={!!user} 
-          onAuth={user ? handleLogout : () => {}}
+          onAuth={user ? () => signOut() : () => {}}
           onClose={() => setMobileMenuOpen(false)}
         />
       )}

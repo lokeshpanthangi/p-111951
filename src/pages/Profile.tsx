@@ -46,9 +46,15 @@ const Profile = () => {
       try {
         // Fetch user profile
         const profileData = await getUserProfile(user.id);
-        setProfile(profileData);
-        setProfileName(profileData.name || "");
-        setProfileBio(profileData.bio || "");
+        const userProfile: UserProfile = {
+          id: profileData.id,
+          name: profileData.name,
+          email: profileData.email,
+          bio: profileData.bio || null
+        };
+        setProfile(userProfile);
+        setProfileName(userProfile.name || "");
+        setProfileBio(userProfile.bio || "");
 
         // Load initial tab data
         if (activeTab === "my-issues") {
@@ -104,11 +110,18 @@ const Profile = () => {
     if (!user) return;
 
     try {
-      const updatedProfile = await updateUserProfile({
+      const updatedProfileData = await updateUserProfile({
         name: profileName,
         bio: profileBio
       });
-
+      
+      const updatedProfile: UserProfile = {
+        id: updatedProfileData.id,
+        name: updatedProfileData.name,
+        email: updatedProfileData.email,
+        bio: updatedProfileData.bio || null
+      };
+      
       setProfile(updatedProfile);
       setIsEditingProfile(false);
 
