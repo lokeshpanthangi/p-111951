@@ -329,19 +329,28 @@ export const updateUserProfile = async (name: string) => {
 
 // Analytics functions
 export const getCategoryDistribution = async () => {
+  // Fix: Replace the group() method with a different approach
   const { data, error } = await supabase
     .from('issues')
-    .select('category, count')
-    .group('category');
+    .select('category');
   
   if (error) {
     console.error("Error fetching category distribution:", error);
     throw error;
   }
   
-  return data.map(item => ({
-    category: item.category as IssueCategory,
-    count: parseInt(item.count)
+  // Process the data to count occurrences of each category
+  const categoryCounts: Record<string, number> = {};
+  
+  data.forEach((issue) => {
+    const category = issue.category;
+    categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+  });
+  
+  // Convert to the expected format
+  return Object.entries(categoryCounts).map(([category, count]) => ({
+    category: category as IssueCategory,
+    count: count
   }));
 };
 
