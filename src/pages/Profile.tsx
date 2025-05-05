@@ -46,6 +46,7 @@ const Profile = () => {
       try {
         // Fetch user profile
         const profileData = await getUserProfile(user.id);
+        // Create UserProfile object with optional bio field
         const userProfile: UserProfile = {
           id: profileData.id,
           name: profileData.name,
