@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/header/Header";
 import Footer from "@/components/Footer";
 import IssueList from "@/components/issues/IssueList";
-import { getUserIssues, deleteIssue } from "@/lib/mock-data";
+import { getUserIssues, deleteIssue } from "@/lib/supabase-data";
 import { Issue } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -21,11 +21,11 @@ const MyIssues = () => {
       try {
         const data = await getUserIssues();
         setIssues(data);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching user issues:", error);
         toast({
           title: "Error loading issues",
-          description: "There was a problem loading your issues. Please try again.",
+          description: error.message || "There was a problem loading your issues. Please try again.",
           variant: "destructive",
         });
       } finally {
@@ -44,11 +44,15 @@ const MyIssues = () => {
     try {
       await deleteIssue(issueId);
       setIssues(issues.filter(issue => issue.id !== issueId));
-    } catch (error) {
+      toast({
+        title: "Issue deleted",
+        description: "Your issue has been successfully deleted.",
+      });
+    } catch (error: any) {
       console.error("Error deleting issue:", error);
       toast({
         title: "Error deleting issue",
-        description: "There was a problem deleting this issue. Please try again.",
+        description: error.message || "There was a problem deleting this issue. Please try again.",
         variant: "destructive",
       });
     }

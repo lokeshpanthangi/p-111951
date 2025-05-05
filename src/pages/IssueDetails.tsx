@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { formatDistanceToNow, format } from "date-fns";
 import Header from "@/components/header/Header";
 import Footer from "@/components/Footer";
-import { getIssueById, voteOnIssue } from "@/lib/mock-data";
+import { getIssueById, voteOnIssue, hasVotedOnIssue } from "@/lib/supabase-data";
 import { Issue } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { ThumbsUp, MapPin, Calendar, Edit, ArrowLeft } from "lucide-react";
 import StatusBadge from "@/components/issues/StatusBadge";
 import CategoryIcon from "@/components/issues/CategoryIcon";
 import IssueList from "@/components/issues/IssueList";
+import { useAuth } from "@/context/AuthContext";
 
 const IssueDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +23,7 @@ const IssueDetails = () => {
   const [hasVoted, setHasVoted] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchIssue = async () => {
@@ -32,10 +34,20 @@ const IssueDetails = () => {
         if (data) {
           setIssue(data);
           
+          // Check if user has voted on this issue
+          if (user) {
+            const voted = await hasVotedOnIssue(id);
+            setHasVoted(voted);
+          }
+          
           // For demo: Get "related" issues (in a real app, these would be nearby or similar issues)
-          const related = await getIssueById(data.id === "1" ? "2" : "1");
-          if (related) {
-            setRelatedIssues([related]);
+          try {
+            const relatedData = await getIssueById(data.id === "1" ? "2" : "1");
+            if (relatedData) {
+              setRelatedIssues([relatedData]);
+            }
+          } catch (error) {
+            console.error("Error fetching related issues:", error);
           }
         } else {
           toast({
@@ -45,11 +57,11 @@ const IssueDetails = () => {
           });
           navigate("/issues");
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching issue:", error);
         toast({
           title: "Error loading issue",
-          description: "There was a problem loading the issue details. Please try again.",
+          description: error.message || "There was a problem loading the issue details. Please try again.",
           variant: "destructive",
         });
       } finally {
@@ -58,10 +70,19 @@ const IssueDetails = () => {
     };
 
     fetchIssue();
-  }, [id, navigate, toast]);
+  }, [id, navigate, toast, user]);
 
   const handleVote = async () => {
-    if (!issue || hasVoted) return;
+    if (!issue || hasVoted || !user) {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "You must be logged in to vote on issues.",
+          variant: "destructive",
+        });
+      }
+      return;
+    }
     
     try {
       const updatedIssue = await voteOnIssue(issue.id);
@@ -73,11 +94,11 @@ const IssueDetails = () => {
           description: "Thank you for your vote!",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error voting on issue:", error);
       toast({
         title: "Error recording vote",
-        description: "There was a problem recording your vote. Please try again.",
+        description: error.message || "There was a problem recording your vote. Please try again.",
         variant: "destructive",
       });
     }
@@ -115,6 +136,7 @@ const IssueDetails = () => {
 
   const timeAgo = formatDistanceToNow(issue.createdAt, { addSuffix: true });
   const formattedDate = format(issue.createdAt, "MMMM d, yyyy");
+  const userOwnsIssue = user && user.id === issue.userId;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -183,14 +205,14 @@ const IssueDetails = () => {
                   variant={hasVoted ? "secondary" : "outline"}
                   className="flex items-center gap-2"
                   onClick={handleVote}
-                  disabled={hasVoted}
+                  disabled={hasVoted || !user}
                 >
                   <ThumbsUp size={18} />
                   <span>{hasVoted ? "Voted" : "Vote"}</span>
                   <span className="ml-1">({issue.votes})</span>
                 </Button>
                 
-                {issue.status === "pending" && (
+                {userOwnsIssue && issue.status === "pending" && (
                   <Button variant="outline" className="flex items-center gap-2" asChild>
                     <a href={`/edit-issue/${issue.id}`}>
                       <Edit size={18} />

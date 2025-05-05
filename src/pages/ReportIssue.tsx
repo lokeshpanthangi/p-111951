@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/header/Header";
 import Footer from "@/components/Footer";
 import IssueForm, { IssueFormData } from "@/components/issues/IssueForm";
-import { createIssue } from "@/lib/mock-data";
+import { createIssue } from "@/lib/supabase-data";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -17,30 +17,15 @@ const ReportIssue = () => {
     setIsSubmitting(true);
 
     try {
-      // In a real app, we would handle file upload separately
-      // Here we're just simulating it for demo purposes
-      let imageUrl;
-      if (data.imageFile) {
-        // Simulate file upload delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        // Use a random placeholder image URL for demo
-        const placeholders = [
-          "https://images.unsplash.com/photo-1518544801976-5e98c8c3c6e6?w=800&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1583952336699-d0d4f0c9b03e?w=800&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1517660029921-0cbea2f15f8f?w=800&auto=format&fit=crop"
-        ];
-        imageUrl = placeholders[Math.floor(Math.random() * placeholders.length)];
-      }
-
-      // Submit the issue
-      await createIssue({
-        title: data.title,
-        description: data.description,
-        category: data.category,
-        location: data.location,
-        imageUrl
-      });
+      await createIssue(
+        {
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          location: data.location,
+        }, 
+        data.imageFile || undefined
+      );
 
       // Show success toast
       toast({
@@ -50,11 +35,11 @@ const ReportIssue = () => {
 
       // Redirect to the issues page
       navigate("/my-issues");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting issue:", error);
       toast({
         title: "Error reporting issue",
-        description: "There was a problem submitting your issue. Please try again.",
+        description: error.message || "There was a problem submitting your issue. Please try again.",
         variant: "destructive",
       });
     } finally {

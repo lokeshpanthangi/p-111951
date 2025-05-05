@@ -4,12 +4,13 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Header from "@/components/header/Header";
 import Footer from "@/components/Footer";
 import IssueForm, { IssueFormData } from "@/components/issues/IssueForm";
-import { getIssueById, updateIssue } from "@/lib/mock-data";
+import { getIssueById, updateIssue } from "@/lib/supabase-data";
 import { Issue } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const EditIssue = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,14 +20,26 @@ const EditIssue = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     // Only fetch if we don't already have the issue from location state
-    if (!issue && id) {
+    if (!issue && id && user) {
       const fetchIssue = async () => {
         try {
           const data = await getIssueById(id);
           if (data) {
+            // Check if the user owns this issue
+            if (data.userId !== user.id) {
+              toast({
+                title: "Access denied",
+                description: "You do not have permission to edit this issue.",
+                variant: "destructive",
+              });
+              navigate("/my-issues");
+              return;
+            }
+            
             if (data.status !== "pending") {
               toast({
                 title: "Cannot edit this issue",
@@ -36,6 +49,7 @@ const EditIssue = () => {
               navigate("/my-issues");
               return;
             }
+            
             setIssue(data);
           } else {
             toast({
@@ -45,11 +59,11 @@ const EditIssue = () => {
             });
             navigate("/my-issues");
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error fetching issue:", error);
           toast({
             title: "Error loading issue",
-            description: "There was a problem loading the issue details. Please try again.",
+            description: error.message || "There was a problem loading the issue details. Please try again.",
             variant: "destructive",
           });
         } finally {
@@ -59,7 +73,7 @@ const EditIssue = () => {
 
       fetchIssue();
     }
-  }, [id, issue, navigate, toast]);
+  }, [id, issue, navigate, toast, user]);
 
   const handleSubmit = async (data: IssueFormData) => {
     if (!id || !issue) return;
@@ -67,30 +81,16 @@ const EditIssue = () => {
     setIsSubmitting(true);
 
     try {
-      // In a real app, we would handle file upload separately
-      // Here we're just simulating it for demo purposes
-      let imageUrl = issue.imageUrl;
-      if (data.imageFile) {
-        // Simulate file upload delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        // Use a random placeholder image URL for demo
-        const placeholders = [
-          "https://images.unsplash.com/photo-1518544801976-5e98c8c3c6e6?w=800&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1583952336699-d0d4f0c9b03e?w=800&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1517660029921-0cbea2f15f8f?w=800&auto=format&fit=crop"
-        ];
-        imageUrl = placeholders[Math.floor(Math.random() * placeholders.length)];
-      }
-
-      // Update the issue
-      const updatedIssue = await updateIssue(id, {
-        title: data.title,
-        description: data.description,
-        category: data.category,
-        location: data.location,
-        imageUrl: data.imageFile === null ? undefined : imageUrl
-      });
+      const updatedIssue = await updateIssue(
+        id, 
+        {
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          location: data.location,
+        },
+        data.imageFile || undefined
+      );
 
       if (updatedIssue) {
         // Show success toast
@@ -108,11 +108,11 @@ const EditIssue = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating issue:", error);
       toast({
         title: "Error updating issue",
-        description: "There was a problem updating your issue. Please try again.",
+        description: error.message || "There was a problem updating your issue. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -3,67 +3,50 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/context/AuthContext";
 
 interface AuthFormProps {
   onSuccess: () => void;
 }
 
 const AuthForm = ({ onSuccess }: AuthFormProps) => {
-  const { toast } = useToast();
+  const { signIn, signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
     
-    // Mock authentication - would connect to backend in real app
-    setTimeout(() => {
+    try {
+      await signIn(email, password);
+      onSuccess();
+    } catch (error) {
+      // Error is handled in the signIn function
+    } finally {
       setIsLoading(false);
-      
-      if (email && password) {
-        toast({
-          title: "Logged in successfully!",
-          description: "Welcome back to IssueRadar.",
-        });
-        onSuccess();
-      } else {
-        toast({
-          title: "Login failed",
-          description: "Please provide valid credentials.",
-          variant: "destructive",
-        });
-      }
-    }, 1000);
+    }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
     
-    // Mock signup - would connect to backend in real app
-    setTimeout(() => {
+    try {
+      await signUp(email, password, name);
+      onSuccess();
+    } catch (error) {
+      // Error is handled in the signUp function
+    } finally {
       setIsLoading(false);
-      
-      if (email && password && name) {
-        toast({
-          title: "Account created!",
-          description: "Your IssueRadar account has been created.",
-        });
-        onSuccess();
-      } else {
-        toast({
-          title: "Sign up failed",
-          description: "Please fill in all fields correctly.",
-          variant: "destructive",
-        });
-      }
-    }, 1000);
+    }
   };
 
   return (
@@ -81,6 +64,11 @@ const AuthForm = ({ onSuccess }: AuthFormProps) => {
         </CardHeader>
 
         <CardContent>
+          {error && (
+            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4">
+              {error}
+            </div>
+          )}
           <TabsContent value="login">
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">

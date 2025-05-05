@@ -6,18 +6,19 @@ import { Menu, X, BarChart3, FileText } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 import UserMenu from "./UserMenu";
 import { ThemeToggle } from "../theme/ThemeToggle";
+import { useAuth } from "@/context/AuthContext";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Mock auth state
+  const { user, signOut, isLoading } = useAuth();
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  // Mock login/logout functionality
-  const handleAuth = () => {
-    setIsLoggedIn(!isLoggedIn);
+  // Handle logout
+  const handleLogout = async () => {
+    await signOut();
   };
 
   return (
@@ -53,14 +54,18 @@ const Header = () => {
           <div className="flex items-center space-x-2">
             <ThemeToggle />
             
-            {isLoggedIn ? (
-              <UserMenu onLogout={handleAuth} />
+            {isLoading ? (
+              <div className="h-10 w-10 rounded-full bg-muted animate-pulse"></div>
+            ) : user ? (
+              <UserMenu onLogout={handleLogout} />
             ) : (
               <div className="hidden md:flex items-center space-x-4">
-                <Button variant="outline" onClick={handleAuth}>
-                  Log in
+                <Button variant="outline" asChild>
+                  <Link to="/">Log in</Link>
                 </Button>
-                <Button onClick={handleAuth}>Sign up</Button>
+                <Button asChild>
+                  <Link to="/">Sign up</Link>
+                </Button>
               </div>
             )}
             
@@ -79,8 +84,8 @@ const Header = () => {
       
       {mobileMenuOpen && (
         <MobileMenu 
-          isLoggedIn={isLoggedIn} 
-          onAuth={handleAuth} 
+          isLoggedIn={!!user} 
+          onAuth={user ? handleLogout : () => {}}
           onClose={() => setMobileMenuOpen(false)}
         />
       )}

@@ -1,17 +1,18 @@
 
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Header from "@/components/header/Header";
 import Footer from "@/components/Footer";
 import AuthForm from "@/components/auth/AuthForm";
-import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 const Index = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, isLoading } = useAuth();
+  const location = useLocation();
   
   const handleAuthSuccess = () => {
-    setIsLoggedIn(true);
+    // This is handled by the AuthContext now
   };
 
   return (
@@ -190,7 +191,11 @@ const Index = () => {
                 </ul>
               </div>
               
-              {isLoggedIn ? (
+              {isLoading ? (
+                <div className="flex justify-center items-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
+              ) : user ? (
                 <div className="bg-civic-light rounded-lg p-8 text-center">
                   <h3 className="text-2xl font-bold mb-4">You're logged in!</h3>
                   <p className="mb-6">

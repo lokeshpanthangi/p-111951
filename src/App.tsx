@@ -13,28 +13,44 @@ import EditIssue from "./pages/EditIssue";
 import NotFound from "./pages/NotFound";
 import Analytics from "./pages/Analytics";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
+import { AuthProvider } from "./context/AuthContext";
+import RequireAuth from "./components/auth/RequireAuth";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="system" storageKey="issue-radar-theme">
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/report" element={<ReportIssue />} />
-            <Route path="/my-issues" element={<MyIssues />} />
-            <Route path="/issues" element={<BrowseIssues />} />
-            <Route path="/issues/:id" element={<IssueDetails />} />
-            <Route path="/edit-issue/:id" element={<EditIssue />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/report" element={
+                <RequireAuth>
+                  <ReportIssue />
+                </RequireAuth>
+              } />
+              <Route path="/my-issues" element={
+                <RequireAuth>
+                  <MyIssues />
+                </RequireAuth>
+              } />
+              <Route path="/issues" element={<BrowseIssues />} />
+              <Route path="/issues/:id" element={<IssueDetails />} />
+              <Route path="/edit-issue/:id" element={
+                <RequireAuth>
+                  <EditIssue />
+                </RequireAuth>
+              } />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
