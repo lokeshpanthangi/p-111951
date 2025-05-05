@@ -110,7 +110,7 @@ export const createIssue = async (issueData: Partial<Issue>, imageFile?: File): 
 };
 
 // Function to update an issue
-export const updateIssue = async (id: string, issueData: Partial<Issue>, imageFile?: File): Promise<Issue | undefined> => {
+export const updateIssue = async (id: string, issueData: Partial<Issue>, imageFile?: File | null): Promise<Issue | undefined> => {
   const { data: session } = await supabase.auth.getSession();
   
   if (!session.session?.user) {
@@ -134,8 +134,8 @@ export const updateIssue = async (id: string, issueData: Partial<Issue>, imageFi
   }
   
   // Handle image upload if provided
-  let imageUrl = issueData.imageFile === null ? null : existingIssue.image_url;
-  if (imageFile) {
+  let imageUrl = imageFile === null ? null : existingIssue.image_url;
+  if (imageFile && imageFile instanceof File) {
     const fileName = `${Date.now()}-${imageFile.name}`;
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('issue-images')
