@@ -3,18 +3,21 @@ import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { Issue } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
-import { ThumbsUp, Image } from "lucide-react";
+import { ThumbsUp, Image, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StatusBadge from "./StatusBadge";
 import CategoryIcon from "./CategoryIcon";
+import { Button } from "@/components/ui/button";
 
 interface IssueCardProps {
   issue: Issue;
   showActions?: boolean;
   onClick?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-const IssueCard = ({ issue, showActions = false, onClick }: IssueCardProps) => {
+const IssueCard = ({ issue, showActions = false, onClick, onEdit, onDelete }: IssueCardProps) => {
   const timeAgo = formatDistanceToNow(issue.createdAt, { addSuffix: true });
   
   return (
@@ -90,6 +93,27 @@ const IssueCard = ({ issue, showActions = false, onClick }: IssueCardProps) => {
               <span className="text-xs font-medium">{issue.votes}</span>
             </div>
           </div>
+
+          {showActions && onEdit && onDelete && (
+            <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-border/50">
+              <Button variant="ghost" size="sm" className="h-8 px-2" onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onEdit();
+              }}>
+                <Pencil className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 px-2 text-destructive hover:text-destructive" onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete();
+              }}>
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

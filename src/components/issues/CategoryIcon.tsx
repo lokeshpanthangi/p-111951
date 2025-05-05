@@ -25,27 +25,10 @@ const CategoryIcon = ({ category, size = 18 }: CategoryIconProps) => {
   };
 
   return (
-    <div className={`category-icon bg-${getCategoryColor(category)}/10`}>
+    <div className="category-icon">
       {renderIcon()}
     </div>
   );
-};
-
-// Helper function to get color based on category
-const getCategoryColor = (category: IssueCategory): string => {
-  switch (category) {
-    case "road":
-      return "amber-600";
-    case "water":
-      return "blue-500";
-    case "sanitation":
-      return "green-600";
-    case "electricity":
-      return "yellow-500";
-    case "other":
-    default:
-      return "gray-500";
-  }
 };
 
 export default CategoryIcon;
