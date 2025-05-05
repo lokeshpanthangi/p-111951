@@ -1,4 +1,4 @@
-import { Issue, IssueCategory, IssueStatus } from "@/types";
+import { Issue, IssueCategory, IssueStatus, UserProfile } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
 // Function to get all issues
@@ -289,7 +289,7 @@ const transformIssueFromDb = (data: any): Issue => {
 };
 
 // Function to get user profile
-export const getUserProfile = async (userId: string) => {
+export const getUserProfile = async (userId: string): Promise<UserProfile> => {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -301,17 +301,18 @@ export const getUserProfile = async (userId: string) => {
     throw error;
   }
   
+  // Cast the data to include bio, even if it's null
   return {
     id: data.id,
     name: data.name,
     email: data.email,
-    bio: data.bio || null,
+    bio: data.bio as string | null,
     created_at: data.created_at
   };
 };
 
 // Function to update user profile
-export const updateUserProfile = async (profileData: { name?: string, bio?: string }) => {
+export const updateUserProfile = async (profileData: { name?: string, bio?: string }): Promise<UserProfile> => {
   const { data: session } = await supabase.auth.getSession();
   
   if (!session.session?.user) {
@@ -330,11 +331,12 @@ export const updateUserProfile = async (profileData: { name?: string, bio?: stri
     throw error;
   }
   
+  // Cast the data to include bio, even if it's null
   return {
     id: data.id,
     name: data.name,
     email: data.email,
-    bio: data.bio || null,
+    bio: data.bio as string | null,
     created_at: data.created_at
   };
 };
