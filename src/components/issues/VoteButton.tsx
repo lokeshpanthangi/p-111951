@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ThumbsUp, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -103,14 +102,14 @@ const VoteButton = ({
                 "group-hover:scale-110 group-hover:text-primary transition-all duration-200"
               )} />
             )}
-            <span>{isVoted ? "Voted" : "Vote"}</span>
+            <span>{isVoted ? "Voted" : "UPVOTE"}</span>
             {showCount && <span className="ml-1">({votes})</span>}
           </Button>
         </TooltipTrigger>
         <TooltipContent>
           {isVoted 
             ? "You've already voted on this issue" 
-            : "Show your support for this issue"}
+            : "Upvote this issue to show your support"}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

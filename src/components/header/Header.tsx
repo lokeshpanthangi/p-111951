@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, BarChart3, FileText } from "lucide-react";
 import MobileMenu from "./MobileMenu";
@@ -11,9 +10,26 @@ import { useAuth } from "@/context/AuthContext";
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, signOut, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const scrollToAuth = () => {
+    const authSection = document.getElementById("auth-section");
+    if (authSection) {
+      authSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleAuthClick = () => {
+    if (location.pathname === "/") {
+      scrollToAuth();
+    } else {
+      navigate("/", { state: { scrollToAuth: true } });
+    }
   };
 
   return (
@@ -55,11 +71,11 @@ const Header = () => {
               <UserMenu />
             ) : (
               <div className="hidden md:flex items-center space-x-4">
-                <Button variant="outline" asChild>
-                  <Link to="/">Log in</Link>
+                <Button variant="outline" onClick={handleAuthClick}>
+                  Log in
                 </Button>
-                <Button asChild>
-                  <Link to="/">Sign up</Link>
+                <Button onClick={handleAuthClick}>
+                  Sign up
                 </Button>
               </div>
             )}

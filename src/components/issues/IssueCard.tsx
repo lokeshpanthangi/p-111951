@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { Issue } from "@/types";
@@ -8,7 +7,8 @@ import { cn } from "@/lib/utils";
 import StatusBadge from "./StatusBadge";
 import CategoryIcon from "./CategoryIcon";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getUserProfile } from "@/lib/supabase-data";
 
 interface IssueCardProps {
   issue: Issue;
@@ -28,7 +28,22 @@ const IssueCard = ({
   onVote
 }: IssueCardProps) => {
   const [isVoting, setIsVoting] = useState(false);
+  const [creatorName, setCreatorName] = useState<string>("");
   const timeAgo = formatDistanceToNow(issue.createdAt, { addSuffix: true });
+  
+  useEffect(() => {
+    let mounted = true;
+    async function fetchCreator() {
+      try {
+        const profile = await getUserProfile(issue.userId);
+        if (mounted) setCreatorName(profile.name || profile.email || "User");
+      } catch {
+        if (mounted) setCreatorName("User");
+      }
+    }
+    fetchCreator();
+    return () => { mounted = false; };
+  }, [issue.userId]);
   
   const handleVote = async (e: React.MouseEvent) => {
     if (!onVote) return;
@@ -82,7 +97,9 @@ const IssueCard = ({
         <div className="p-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
             <CategoryIcon category={issue.category} />
-            <span className="capitalize">{issue.category}</span>
+            <span className="inline-block px-2 py-1 bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-full text-xs font-medium mb-2 capitalize">
+              {issue.category}
+            </span>
             <span className="text-xs text-muted-foreground ml-auto">{timeAgo}</span>
           </div>
           
@@ -110,6 +127,7 @@ const IssueCard = ({
                 </svg>
                 {issue.location}
               </span>
+              <span className="block text-xs text-muted-foreground mt-1">By: {creatorName}</span>
             </div>
             
             <button
@@ -123,19 +141,22 @@ const IssueCard = ({
             >
               <ThumbsUp size={14} className={cn("text-primary", isVoting && "animate-pulse")} /> 
               <span className="text-xs font-medium">{issue.votes}</span>
+              <span className="ml-1 text-xs font-semibold">UPVOTE</span>
             </button>
           </div>
 
           {showActions && onEdit && onDelete && (
             <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-border/50">
-              <Button variant="ghost" size="sm" className="h-8 px-2" onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onEdit();
-              }}>
-                <Pencil className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
+              {(issue.status === "pending" || issue.status === "in-progress") && (
+                <Button variant="ghost" size="sm" className="h-8 px-2" onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onEdit();
+                }}>
+                  <Pencil className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+              )}
               <Button variant="ghost" size="sm" className="h-8 px-2 text-destructive hover:text-destructive" onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();

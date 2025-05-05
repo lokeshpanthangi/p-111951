@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { formatDistanceToNow, format } from "date-fns";
 import Header from "@/components/header/Header";
 import Footer from "@/components/Footer";
-import { getIssueById, voteOnIssue, hasVotedOnIssue } from "@/lib/supabase-data";
+import { getIssueById, voteOnIssue, hasVotedOnIssue, getUserProfile } from "@/lib/supabase-data";
 import { Issue } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,7 @@ const IssueDetails = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [creatorName, setCreatorName] = useState<string>("");
 
   useEffect(() => {
     const fetchIssue = async () => {
@@ -48,6 +48,12 @@ const IssueDetails = () => {
             }
           } catch (error) {
             console.error("Error fetching related issues:", error);
+          }
+
+          if (id) {
+            getUserProfile(data.userId).then(profile => {
+              setCreatorName(profile.name || profile.email || "User");
+            }).catch(() => setCreatorName("User"));
           }
         } else {
           toast({
@@ -193,6 +199,7 @@ const IssueDetails = () => {
               </div>
               
               <h1 className="text-2xl md:text-3xl font-bold mb-4">{issue.title}</h1>
+              <div className="mb-2 text-sm text-muted-foreground">By: {creatorName}</div>
               
               <div className="prose dark:prose-invert max-w-none mb-6">
                 <p>{issue.description}</p>
@@ -208,11 +215,11 @@ const IssueDetails = () => {
                   disabled={hasVoted || !user}
                 >
                   <ThumbsUp size={18} />
-                  <span>{hasVoted ? "Voted" : "Vote"}</span>
+                  <span>{hasVoted ? "Voted" : "UPVOTE"}</span>
                   <span className="ml-1">({issue.votes})</span>
                 </Button>
                 
-                {userOwnsIssue && issue.status === "pending" && (
+                {userOwnsIssue && (issue.status === "pending" || issue.status === "in-progress") && (
                   <Button variant="outline" className="flex items-center gap-2" asChild>
                     <a href={`/edit-issue/${issue.id}`}>
                       <Edit size={18} />

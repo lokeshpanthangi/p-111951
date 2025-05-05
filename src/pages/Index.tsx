@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -17,6 +16,7 @@ const Index = () => {
   const location = useLocation();
   const [recentIssues, setRecentIssues] = useState<Issue[]>([]);
   const [isLoadingIssues, setIsLoadingIssues] = useState(true);
+  const authSectionRef = useRef<HTMLDivElement>(null);
   
   const handleAuthSuccess = () => {
     // This is handled by the AuthContext now
@@ -36,6 +36,15 @@ const Index = () => {
 
     fetchRecentIssues();
   }, []);
+
+  useEffect(() => {
+    if (location.state && location.state.scrollToAuth) {
+      setTimeout(() => {
+        const el = document.getElementById("auth-section");
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [location.state]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -200,7 +209,7 @@ const Index = () => {
         </section>
         
         {/* Auth Section */}
-        <section className="py-16 bg-white dark:bg-gray-900">
+        <section id="auth-section" className="py-16 bg-white dark:bg-gray-900" ref={authSectionRef}>
           <div className="container mx-auto px-4 md:px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="text-center md:text-left">
@@ -236,9 +245,9 @@ const Index = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                 </div>
               ) : user ? (
-                <div className="bg-civic-light rounded-lg p-8 text-center">
-                  <h3 className="text-2xl font-bold mb-4">You're logged in!</h3>
-                  <p className="mb-6">
+                <div className="bg-civic-light dark:bg-gray-800 rounded-lg p-8 text-center">
+                  <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">You're logged in!</h3>
+                  <p className="mb-6 text-gray-800 dark:text-gray-300">
                     Thank you for being part of our community. You can now report issues 
                     and track their progress.
                   </p>
