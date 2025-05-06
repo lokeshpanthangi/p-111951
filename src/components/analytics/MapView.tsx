@@ -80,6 +80,21 @@ const MapView: React.FC<MapViewProps> = ({
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
   
+  // Define filteredIssues before using it
+  const filteredIssues = issues.filter(issue => {
+    // Apply search filter
+    const matchesSearch = searchQuery === "" || 
+      issue.title.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Apply status filter
+    const matchesStatus = statusFilter[issue.status];
+    
+    // Apply category filter
+    const matchesCategory = categoryFilter[issue.category];
+    
+    return matchesSearch && matchesStatus && matchesCategory;
+  });
+  
   // Update category filters when selectedCategory changes from parent
   useEffect(() => {
     if (selectedCategory) {
@@ -237,20 +252,6 @@ const MapView: React.FC<MapViewProps> = ({
     setSelectedCategory(null);
     clearSearch();
   };
-  
-  const filteredIssues = issues.filter(issue => {
-    // Apply search filter
-    const matchesSearch = searchQuery === "" || 
-      issue.title.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // Apply status filter
-    const matchesStatus = statusFilter[issue.status];
-    
-    // Apply category filter
-    const matchesCategory = categoryFilter[issue.category];
-    
-    return matchesSearch && matchesStatus && matchesCategory;
-  });
   
   const handleMapClick = () => {
     setSelectedIssue(null);

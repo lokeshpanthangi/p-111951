@@ -59,8 +59,8 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({
             cx="50%"
             cy="50%"
             labelLine={false}
-            outerRadius={({ viewBox }) => Math.min(viewBox.width, viewBox.height) / 3}
-            innerRadius={({ viewBox }) => Math.min(viewBox.width, viewBox.height) / 6}
+            outerRadius="60%"
+            innerRadius="30%"
             fill="#8884d8"
             dataKey="value"
             nameKey="displayName"
