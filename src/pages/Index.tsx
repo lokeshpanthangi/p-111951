@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -165,7 +164,7 @@ const Index = () => {
             ) : recentIssues.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {recentIssues.map((issue) => (
-                  <div key={issue.id} className="bg-white dark:bg-gray-900 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+                  <Link key={issue.id} to={`/issues/${issue.id}`} className="bg-white dark:bg-gray-900 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden block focus:outline-none focus:ring-2 focus:ring-primary">
                     <div className="h-48 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
                       {issue.imageUrl ? (
                         <img 
@@ -186,18 +185,16 @@ const Index = () => {
                       <span className="inline-block px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full text-xs font-medium mb-2 capitalize">
                         {issue.category}
                       </span>
-                      <Link to={`/issues/${issue.id}`}>
-                        <h3 className="text-lg font-semibold mb-2 hover:text-primary hover:underline">
-                          {issue.title}
-                        </h3>
-                      </Link>
+                      <h3 className="text-lg font-semibold mb-2 hover:text-primary hover:underline">
+                        {issue.title}
+                      </h3>
                       <p className="text-sm text-muted-foreground mb-3">{issue.location}</p>
                       <div className="flex justify-between text-sm">
                         <span>{issue.votes} votes</span>
                         <span>{new Date(issue.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (

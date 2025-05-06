@@ -158,7 +158,7 @@ const MapView: React.FC<MapViewProps> = ({
     }
   }, [mapStyle]);
   
-  // Update markers when issues or filters change
+  // Update markers when issues, filters, or selectedIssue change
   useEffect(() => {
     if (!map.current) return;
     
@@ -183,56 +183,68 @@ const MapView: React.FC<MapViewProps> = ({
         issue.category === 'electricity' ? '#FACC15' :
         '#6B7280';
       
-      // Highlight the focused issue with a special marker
-      const isFocused = focusIssueId && issue.id === focusIssueId;
-      
+      // Highlight the selected issue with a special marker
+      const isSelected = selectedIssue && issue.id === selectedIssue.id;
       markerElement.innerHTML = `
-        <div class="w-6 h-6 rounded-full ${isFocused ? 'animate-pulse shadow-lg scale-125' : ''} bg-white flex items-center justify-center border-2" 
+        <div class="w-6 h-6 rounded-full ${isSelected ? 'ring-4 ring-primary scale-125' : ''} bg-white flex items-center justify-center border-2" 
              style="border-color: ${color}">
           <div class="text-xs">${getCategoryIconText(issue.category)}</div>
         </div>
       `;
-      
       markerElement.style.cursor = 'pointer';
       
       // Create and add the marker
       const marker = new mapboxgl.Marker(markerElement)
-        .setLngLat([issue.lng, issue.lat])
-        .addTo(map.current!);
-      
-      // Add click handler to marker
-      marker.getElement().addEventListener('click', () => {
+        .setLngLat([issue.lng, issue.lat]);
+
+      // If this is the selected issue, add a popup
+      if (isSelected) {
+        const popupNode = document.createElement('div');
+        popupNode.innerHTML = `
+          <div style="min-width:180px;max-width:220px;">
+            <strong>${issue.title}</strong><br/>
+            <span style="font-size:12px;">${issue.category} | ${issue.status}</span><br/>
+            <span style="font-size:12px; font-weight: 500; color: #2563EB;">${issue.votes} vote${issue.votes === 1 ? '' : 's'}</span><br/>
+            <button id="view-details-btn" style="margin-top:6px;padding:4px 8px;background:#2563EB;color:white;border:none;border-radius:4px;cursor:pointer;">View Details</button>
+          </div>
+        `;
+        const popup = new mapboxgl.Popup({ offset: 25 })
+          .setDOMContent(popupNode);
+        marker.setPopup(popup);
+        setTimeout(() => {
+          popup.addTo(map.current!);
+          // Add click handler for the button
+          const btn = popupNode.querySelector('#view-details-btn');
+          if (btn) {
+            btn.addEventListener('click', () => {
+              navigate(`/issues/${issue.id}`);
+            });
+          }
+        }, 0);
+      }
+
+      // Marker click: select and focus this issue
+      markerElement.addEventListener('click', (e) => {
+        e.stopPropagation();
         setSelectedIssue(issue);
+        map.current!.flyTo({ center: [issue.lng, issue.lat], zoom: 14, essential: true });
       });
       
+      marker.addTo(map.current!);
       markers.current.push(marker);
       
       // Extend bounds
+      if (issue.lat && issue.lng) {
       bounds.extend([issue.lng, issue.lat]);
       hasValidBounds = true;
+      }
     });
-    
-    // If there's a focus issue, zoom directly to it
-    if (focusIssue && map.current) {
-      map.current.flyTo({
-        center: [focusIssue.lng, focusIssue.lat],
-        zoom: 15,
-        essential: true,
-        duration: 2000
-      });
-      
-      // Also select the issue in the sidebar
-      setSelectedIssue(focusIssue);
+
+    // Fit map to bounds if there are issues
+    if (hasValidBounds && filteredIssues.length > 1) {
+      map.current.fitBounds(bounds, { padding: 60, maxZoom: 12 });
     }
-    // Otherwise fit map to bounds if there are any issues
-    else if (hasValidBounds && filteredIssues.length > 0) {
-      map.current.fitBounds(bounds, { 
-        padding: 50, 
-        maxZoom: 15,
-        duration: 1000
-      });
-    }
-  }, [filteredIssues, mapStyle, focusIssueId, focusIssue]);
+  }, [filteredIssues, selectedIssue]);
   
   const getCategoryIconText = (category: IssueCategory) => {
     switch (category) {
@@ -278,7 +290,6 @@ const MapView: React.FC<MapViewProps> = ({
   
   const handleIssueClick = (issue: MapIssue) => {
     setSelectedIssue(issue);
-    
     // Center map on the selected issue
     if (map.current) {
       map.current.flyTo({
@@ -538,45 +549,6 @@ const MapView: React.FC<MapViewProps> = ({
           <Filter size={16} className="mr-1" />
           {showSidebar ? "Hide Filters" : "Show Filters"}
         </Button>
-        
-        {/* Selected Issue Popup */}
-        {selectedIssue && (
-          <div 
-            className="absolute bottom-4 left-0 right-0 mx-auto w-80 bg-background rounded-lg shadow-lg border animate-fade-in z-10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-2">
-                  <CategoryIcon category={selectedIssue.category} />
-                  <div>
-                    <h3 className="font-medium line-clamp-2">{selectedIssue.title}</h3>
-                    <StatusBadge status={selectedIssue.status} size="sm" className="mt-1" />
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={() => setSelectedIssue(null)}
-                >
-                  <X size={14} />
-                </Button>
-              </div>
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  {selectedIssue.votes} votes
-                </span>
-                <Button 
-                  size="sm" 
-                  onClick={() => handleViewDetails(selectedIssue)}
-                >
-                  View Details
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
         
         {/* Back to Top Button */}
         <div className="absolute bottom-4 right-4 z-10">

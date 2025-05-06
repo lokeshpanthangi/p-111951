@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Issue, IssueCategory, IssueStatus } from "@/types";
 import { useForm } from "react-hook-form";
@@ -191,7 +190,8 @@ const IssueForm = ({
           )}
         />
 
-        {(showStatusField && isOwner) && (
+        {/* Status field: only show if editing and showStatusField is true */}
+        {(showStatusField && isOwner && !!initialData) && (
           <FormField
             control={form.control}
             name="status"

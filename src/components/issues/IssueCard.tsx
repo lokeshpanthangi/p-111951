@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { Issue } from "@/types";
@@ -146,7 +145,7 @@ const IssueCard = ({
 
           {showActions && onEdit && onDelete && (
             <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-border/50">
-              {(issue.status === "pending" || issue.status === "in-progress") && (
+              {issue.status === "pending" && (
                 <Button variant="ghost" size="sm" className="h-8 px-2" onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -156,14 +155,16 @@ const IssueCard = ({
                   Edit
                 </Button>
               )}
-              <Button variant="ghost" size="sm" className="h-8 px-2 text-destructive hover:text-destructive" onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onDelete();
-              }}>
-                <Trash2 className="h-4 w-4 mr-1" />
-                Delete
-              </Button>
+              {issue.status === "pending" && (
+                <Button variant="ghost" size="sm" className="h-8 px-2 text-destructive hover:text-destructive" onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete();
+                }}>
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete
+                </Button>
+              )}
             </div>
           )}
         </div>

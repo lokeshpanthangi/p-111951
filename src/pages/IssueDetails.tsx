@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { formatDistanceToNow, format } from "date-fns";
@@ -236,7 +235,7 @@ const IssueDetails = () => {
                   <span className="ml-1">({issue.votes})</span>
                 </Button>
                 
-                {userOwnsIssue && (issue.status === "pending" || issue.status === "in-progress") && (
+                {userOwnsIssue && issue.status === "pending" && (
                   <Button variant="outline" className="flex items-center gap-2" asChild>
                     <a href={`/edit-issue/${issue.id}`}>
                       <Edit size={18} />

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Issue } from "@/types";
 import IssueCard from "./IssueCard";
@@ -22,6 +21,7 @@ interface IssueListProps {
   onEdit?: (issue: Issue) => void;
   onDelete?: (issueId: string) => void;
   onVote?: (issueId: string) => Promise<void>;
+  onClick?: (issue: Issue) => void;
 }
 
 const IssueList = ({ 
@@ -29,7 +29,8 @@ const IssueList = ({
   isUserOwned = false,
   onEdit,
   onDelete,
-  onVote 
+  onVote,
+  onClick
 }: IssueListProps) => {
   const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -100,6 +101,7 @@ const IssueList = ({
             onEdit={onEdit ? () => onEdit(issue) : undefined}
             onDelete={onDelete ? () => handleDelete(issue) : undefined}
             onVote={onVote ? () => onVote(issue.id) : undefined}
+            onClick={onClick ? () => onClick(issue) : undefined}
           />
         ))}
       </div>
