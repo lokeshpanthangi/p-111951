@@ -19,6 +19,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Inter', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -65,16 +68,16 @@ export default {
 				},
 				// New modern color palette
 				civic: {
-					blue: '#4C6FFF',
-					green: '#34D399',
-					amber: '#FBBF24',
-					red: '#F43F5E',
-					light: '#F0FDF9'
+					blue: '#2563EB', // Updated to Blue-600
+					green: '#22C55E', // Updated to Green-500
+					amber: '#F59E0B', // Updated to Amber-500
+					red: '#EF4444', // Red-500
+					light: '#F9FAFB' // Gray-50
 				},
 				status: {
-					pending: '#FBBF24',
-					"in-progress": '#4C6FFF',
-					resolved: '#34D399'
+					pending: '#FACC15', // Yellow-400 for Light Mode
+					"in-progress": '#38BDF8', // Sky-400 for Light Mode
+					resolved: '#22C55E' // Green-500 for Light Mode
 				}
 			},
 			borderRadius: {

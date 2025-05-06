@@ -16,11 +16,11 @@ interface CategoryDistributionProps {
 }
 
 const COLORS = {
-  road: "#FBBF24",     // amber from our updated theme
-  water: "#4C6FFF",    // blue from our updated theme
-  sanitation: "#34D399", // green from our updated theme
-  electricity: "#FBBF24", // amber from our updated theme (for consistency)
-  other: "#94A3B8",    // gray
+  road: "#F59E0B",     // Amber-500 from the updated theme
+  water: "#2563EB",    // Blue-600 from the updated theme
+  sanitation: "#22C55E", // Green-500 from the updated theme
+  electricity: "#38BDF8", // Sky-400 from the updated theme
+  other: "#6B7280",    // Gray-500 from the updated theme
 };
 
 const CategoryDistribution: React.FC<CategoryDistributionProps> = ({
@@ -46,13 +46,13 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({
   }
 
   return (
-    <div className="h-[300px] w-full">
+    <div className="w-full h-full">
       <div className="text-center mb-2">
         <div className="text-2xl font-bold">{totalIssues}</div>
         <div className="text-xs text-muted-foreground">Total Issues</div>
       </div>
       
-      <ResponsiveContainer width="100%" height="80%">
+      <ResponsiveContainer width="100%" height={250}>
         <PieChart>
           <Pie
             data={chartData}
@@ -86,7 +86,7 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({
             {chartData.map((entry, index) => (
               <Cell 
                 key={`cell-${index}`} 
-                fill={COLORS[entry.name as IssueCategory] || "#94A3B8"}
+                fill={COLORS[entry.name as IssueCategory] || "#6B7280"}
                 className={selectedCategory && selectedCategory !== entry.name ? "opacity-60" : ""}
                 style={{ cursor: 'pointer' }}
               />
@@ -98,10 +98,10 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({
               name
             ]}
             contentStyle={{ 
-              backgroundColor: 'white',
+              backgroundColor: 'var(--card)',
               borderRadius: '8px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              border: '1px solid #E2E8F0'
+              border: '1px solid var(--border)'
             }}
           />
           <Legend 

@@ -11,7 +11,9 @@ import { getIssues } from "@/lib/supabase-data";
 import { Issue } from "@/types";
 import StatusBadge from "@/components/issues/StatusBadge";
 import CategoryIcon from "@/components/issues/CategoryIcon";
-import { getUserBasedImage } from "@/utils/getDynamicImage";
+
+// Static hero image URL
+const HERO_IMAGE_URL = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&auto=format&fit=crop";
 
 const Index = () => {
   const { user, isLoading } = useAuth();
@@ -19,9 +21,6 @@ const Index = () => {
   const [recentIssues, setRecentIssues] = useState<Issue[]>([]);
   const [isLoadingIssues, setIsLoadingIssues] = useState(true);
   const authSectionRef = useRef<HTMLDivElement>(null);
-  
-  // Get dynamic hero image based on user ID
-  const heroImageUrl = getUserBasedImage(user?.id);
   
   const handleAuthSuccess = () => {
     // This is handled by the AuthContext now
@@ -83,7 +82,7 @@ const Index = () => {
               <div className="relative mx-auto w-full max-w-md">
                 <div className="absolute inset-0 bg-primary/10 rounded-lg transform rotate-3 scale-105"></div>
                 <img 
-                  src={heroImageUrl}
+                  src={HERO_IMAGE_URL}
                   alt="Community enhancement" 
                   className="relative rounded-lg shadow-lg w-full h-64 md:h-auto object-cover"
                 />

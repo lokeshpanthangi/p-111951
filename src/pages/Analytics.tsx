@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -133,15 +134,15 @@ const Analytics = () => {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <Card>
-                  <CardHeader>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Card className="overflow-hidden">
+                  <CardHeader className="pb-2">
                     <CardTitle>Category Distribution</CardTitle>
                     <CardDescription>
                       Number of issues by category
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="h-[300px]">
+                  <CardContent className="h-[300px] p-0">
                     {isLoading ? (
                       <div className="h-full flex items-center justify-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -156,14 +157,14 @@ const Analytics = () => {
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
+                <Card className="overflow-hidden">
+                  <CardHeader className="pb-2">
                     <CardTitle>Temporal Analysis</CardTitle>
                     <CardDescription>
                       Issue reports over the past 7 days
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="h-[300px]">
+                  <CardContent className="h-[300px] p-0">
                     {isLoading ? (
                       <div className="h-full flex items-center justify-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -194,11 +195,11 @@ const Analytics = () => {
               </Card>
             </TabsContent>
 
-            <TabsContent value="map">
-              <Card>
-                <CardContent className="p-0">
+            <TabsContent value="map" className="h-[70vh] min-h-[600px]">
+              <Card className="h-full overflow-hidden">
+                <CardContent className="p-0 h-full">
                   {isLoading ? (
-                    <div className="h-[70vh] flex items-center justify-center">
+                    <div className="h-full flex items-center justify-center">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                     </div>
                   ) : (

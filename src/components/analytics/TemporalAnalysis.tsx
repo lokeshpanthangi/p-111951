@@ -28,15 +28,15 @@ const TemporalAnalysis: React.FC<TemporalAnalysisProps> = ({ data }) => {
   }
 
   return (
-    <div className="h-[300px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full h-full">
+      <ResponsiveContainer width="100%" height={300}>
         <LineChart
           data={formattedData}
           margin={{
             top: 10,
             right: 10,
             left: 0,
-            bottom: 10,
+            bottom: 20,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -59,10 +59,10 @@ const TemporalAnalysis: React.FC<TemporalAnalysisProps> = ({ data }) => {
             formatter={(value) => [`${value} issues`, 'Reported']}
             labelFormatter={(label) => `Date: ${label}`}
             contentStyle={{
-              backgroundColor: 'white',
+              backgroundColor: 'var(--card)',
               borderRadius: '8px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              border: '1px solid #E2E8F0'
+              border: '1px solid var(--border)'
             }}
           />
           <Line
