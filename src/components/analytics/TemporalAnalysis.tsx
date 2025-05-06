@@ -29,7 +29,7 @@ const TemporalAnalysis: React.FC<TemporalAnalysisProps> = ({ data }) => {
 
   return (
     <div className="w-full h-full">
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={formattedData}
           margin={{

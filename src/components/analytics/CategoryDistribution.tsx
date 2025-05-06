@@ -52,15 +52,15 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({
         <div className="text-xs text-muted-foreground">Total Issues</div>
       </div>
       
-      <ResponsiveContainer width="100%" height={250}>
+      <ResponsiveContainer width="100%" height="85%">
         <PieChart>
           <Pie
             data={chartData}
             cx="50%"
             cy="50%"
             labelLine={false}
-            outerRadius={80}
-            innerRadius={50}
+            outerRadius={({ viewBox }) => Math.min(viewBox.width, viewBox.height) / 3}
+            innerRadius={({ viewBox }) => Math.min(viewBox.width, viewBox.height) / 6}
             fill="#8884d8"
             dataKey="value"
             nameKey="displayName"

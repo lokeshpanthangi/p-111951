@@ -66,24 +66,35 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// New modern color palette
+				// Updated modern color palette
 				civic: {
-					blue: '#2563EB', // Updated to Blue-600
-					green: '#22C55E', // Updated to Green-500
-					amber: '#F59E0B', // Updated to Amber-500
+					blue: '#2563EB', // Blue-600 for Light Theme
+					'blue-hover': '#1D4ED8', // Blue-700 for Light Theme
+					'blue-dark': '#3B82F6', // Blue-500 for Dark Theme
+					'blue-hover-dark': '#60A5FA', // Blue-400 for Dark Theme
+					amber: '#F59E0B', // Amber-500 for Light Theme
+					'amber-dark': '#FBBF24', // Amber-400 for Dark Theme
+					green: '#22C55E', // Green-500 for Light Theme
+					'green-dark': '#4ADE80', // Green-400 for Dark Theme
 					red: '#EF4444', // Red-500
-					light: '#F9FAFB' // Gray-50
+					light: '#F9FAFB', // Gray-50 for Light Theme Background
+					dark: '#111827', // Gray-900 for Dark Theme Background
 				},
 				status: {
 					pending: '#FACC15', // Yellow-400 for Light Mode
+					'pending-dark': '#FCD34D', // Yellow-300 for Dark Mode
 					"in-progress": '#38BDF8', // Sky-400 for Light Mode
-					resolved: '#22C55E' // Green-500 for Light Mode
+					'in-progress-dark': '#0EA5E9', // Sky-500 for Dark Mode
+					resolved: '#22C55E', // Green-500 for Light Mode
+					'resolved-dark': '#4ADE80', // Green-400 for Dark Mode
 				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				xl: '0.75rem',
+				'2xl': '1rem',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -131,6 +142,10 @@ export default {
 				'scale-in': 'scale-in 0.2s ease-out',
 				'scale-out': 'scale-out 0.2s ease-out',
 				'slide-in': 'slide-in 0.3s ease-out'
+			},
+			boxShadow: {
+				'md': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+				'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
 			}
 		}
 	},

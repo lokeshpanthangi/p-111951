@@ -5,11 +5,11 @@ import {
   ChevronDown, 
   Search, 
   X, 
-  Map as MapIcon, 
   Layers, 
   LocateFixed,
   Filter,
-  ChevronUp
+  ChevronUp,
+  Map as MapIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,8 @@ import { Label } from "@/components/ui/label";
 import StatusBadge from "@/components/issues/StatusBadge";
 import CategoryIcon from "@/components/issues/CategoryIcon";
 import { IssueCategory, IssueStatus } from "@/types";
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Helper function for debouncing
 const debounce = <F extends (...args: any[]) => any>(
@@ -30,31 +32,6 @@ const debounce = <F extends (...args: any[]) => any>(
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn.apply(this, args), delay);
   };
-};
-
-// Mock component for an actual map integration
-const MapPlaceholder = ({ 
-  children,
-  onMapClick
-}: { 
-  children: React.ReactNode;
-  onMapClick: () => void;
-}) => {
-  return (
-    <div 
-      className="relative bg-slate-100 dark:bg-slate-800 h-[600px] w-full flex items-center justify-center overflow-hidden"
-      onClick={onMapClick}
-    >
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="text-muted-foreground">
-          <MapIcon size={48} className="mx-auto mb-2 opacity-20" />
-          <p>Map integration would be displayed here</p>
-          <p className="text-sm">(Mapbox or Google Maps)</p>
-        </div>
-      </div>
-      {children}
-    </div>
-  );
 };
 
 interface MapIssue {
@@ -72,6 +49,9 @@ interface MapViewProps {
   selectedCategory: string | null;
   setSelectedCategory: (category: string | null) => void;
 }
+
+// Set Mapbox token
+mapboxgl.accessToken = 'pk.eyJ1IjoibmFuaS0wMDciLCJhIjoiY21hYnppeG5nMjV6NTJsc2c3MDhpeHhtMiJ9.TQ5dcosh2XePcIgpSH8ZKQ';
 
 const MapView: React.FC<MapViewProps> = ({ 
   issues, 
@@ -94,8 +74,11 @@ const MapView: React.FC<MapViewProps> = ({
   });
   const [selectedIssue, setSelectedIssue] = useState<MapIssue | null>(null);
   const [showSidebar, setShowSidebar] = useState(true);
-  const [mapStyle, setMapStyle] = useState("standard");
+  const [mapStyle, setMapStyle] = useState("light-v11");
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const markers = useRef<mapboxgl.Marker[]>([]);
   
   // Update category filters when selectedCategory changes from parent
   useEffect(() => {
@@ -120,6 +103,112 @@ const MapView: React.FC<MapViewProps> = ({
       });
     }
   }, [selectedCategory]);
+  
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainer.current || map.current) return;
+    
+    const newMap = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: `mapbox://styles/mapbox/${mapStyle}`,
+      center: [0, 20], // Default center (will be adjusted based on issues)
+      zoom: 1.5
+    });
+    
+    // Add navigation controls
+    newMap.addControl(
+      new mapboxgl.NavigationControl(),
+      'top-right'
+    );
+    
+    map.current = newMap;
+    
+    // Clean up on unmount
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, []);
+  
+  // Update map style when theme changes
+  useEffect(() => {
+    if (map.current) {
+      map.current.setStyle(`mapbox://styles/mapbox/${mapStyle}`);
+    }
+  }, [mapStyle]);
+  
+  // Update markers when issues or filters change
+  useEffect(() => {
+    if (!map.current) return;
+    
+    // Clear existing markers
+    markers.current.forEach(marker => marker.remove());
+    markers.current = [];
+    
+    // Create new markers for filtered issues
+    const bounds = new mapboxgl.LngLatBounds();
+    let hasValidBounds = false;
+    
+    filteredIssues.forEach(issue => {
+      // Create marker element
+      const markerElement = document.createElement('div');
+      markerElement.className = 'marker-container';
+      
+      // Style the marker based on category
+      const color = 
+        issue.category === 'road' ? '#F59E0B' : 
+        issue.category === 'water' ? '#2563EB' :
+        issue.category === 'sanitation' ? '#22C55E' :
+        issue.category === 'electricity' ? '#FACC15' :
+        '#6B7280';
+      
+      markerElement.innerHTML = `
+        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center border-2" 
+             style="border-color: ${color}">
+          <div class="text-xs">${getCategoryIconText(issue.category)}</div>
+        </div>
+      `;
+      
+      markerElement.style.cursor = 'pointer';
+      
+      // Create and add the marker
+      const marker = new mapboxgl.Marker(markerElement)
+        .setLngLat([issue.lng, issue.lat])
+        .addTo(map.current!);
+      
+      // Add click handler to marker
+      marker.getElement().addEventListener('click', () => {
+        setSelectedIssue(issue);
+      });
+      
+      markers.current.push(marker);
+      
+      // Extend bounds
+      bounds.extend([issue.lng, issue.lat]);
+      hasValidBounds = true;
+    });
+    
+    // Fit map to bounds if there are any issues
+    if (hasValidBounds && filteredIssues.length > 0) {
+      map.current.fitBounds(bounds, { 
+        padding: 50, 
+        maxZoom: 15,
+        duration: 1000
+      });
+    }
+  }, [filteredIssues, mapStyle]);
+  
+  const getCategoryIconText = (category: IssueCategory) => {
+    switch (category) {
+      case 'road': return 'R';
+      case 'water': return 'W';
+      case 'sanitation': return 'S';
+      case 'electricity': return 'E';
+      case 'other': return 'O';
+    }
+  };
   
   const handleSearchChange = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -169,6 +258,15 @@ const MapView: React.FC<MapViewProps> = ({
   
   const handleIssueClick = (issue: MapIssue) => {
     setSelectedIssue(issue);
+    
+    // Center map on the selected issue
+    if (map.current) {
+      map.current.flyTo({
+        center: [issue.lng, issue.lat],
+        zoom: 14,
+        essential: true
+      });
+    }
   };
   
   const handleViewDetails = (issue: MapIssue) => {
@@ -191,6 +289,22 @@ const MapView: React.FC<MapViewProps> = ({
       setSelectedCategory(selectedCategories[0]);
     } else {
       setSelectedCategory(null);
+    }
+  };
+
+  // Get user location
+  const handleGetCurrentLocation = () => {
+    if (navigator.geolocation && map.current) {
+      navigator.geolocation.getCurrentPosition(position => {
+        const { longitude, latitude } = position.coords;
+        map.current!.flyTo({
+          center: [longitude, latitude],
+          zoom: 13,
+          essential: true
+        });
+      }, error => {
+        console.error("Error getting location:", error);
+      });
     }
   };
 
@@ -341,142 +455,120 @@ const MapView: React.FC<MapViewProps> = ({
       
       {/* Map */}
       <div className="flex-1 relative">
-        <MapPlaceholder onMapClick={handleMapClick}>
-          {/* Map Controls */}
-          <div className="absolute top-4 right-4 flex flex-col gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="bg-background shadow-md h-8 w-8"
-            >
-              <LocateFixed size={16} />
-            </Button>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-background shadow-md h-8 w-8"
-                >
-                  <Layers size={16} />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-32 p-2" align="end">
-                <div className="space-y-1">
-                  <Button
-                    variant={mapStyle === "standard" ? "secondary" : "ghost"}
-                    size="sm"
-                    className="w-full justify-start text-xs h-8"
-                    onClick={() => setMapStyle("standard")}
-                  >
-                    Standard
-                  </Button>
-                  <Button
-                    variant={mapStyle === "satellite" ? "secondary" : "ghost"}
-                    size="sm"
-                    className="w-full justify-start text-xs h-8"
-                    onClick={() => setMapStyle("satellite")}
-                  >
-                    Satellite
-                  </Button>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          {/* Toggle Sidebar Button */}
+        <div ref={mapContainer} className="absolute inset-0" onClick={handleMapClick} />
+        
+        {/* Map Controls */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
           <Button
             variant="outline"
-            size="sm"
-            className="absolute top-4 left-4 bg-background shadow-md h-8 px-2"
-            onClick={() => setShowSidebar(!showSidebar)}
+            size="icon"
+            className="bg-background shadow-md h-8 w-8"
+            onClick={handleGetCurrentLocation}
           >
-            <Filter size={16} className="mr-1" />
-            {showSidebar ? "Hide Filters" : "Show Filters"}
+            <LocateFixed size={16} />
           </Button>
-          
-          {/* Selected Issue Popup */}
-          {selectedIssue && (
-            <div 
-              className="absolute bottom-4 left-0 right-0 mx-auto w-80 bg-background rounded-lg shadow-lg border animate-fade-in"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-2">
-                    <CategoryIcon category={selectedIssue.category} />
-                    <div>
-                      <h3 className="font-medium line-clamp-2">{selectedIssue.title}</h3>
-                      <StatusBadge status={selectedIssue.status} size="sm" className="mt-1" />
-                    </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="bg-background shadow-md h-8 w-8"
+              >
+                <Layers size={16} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-32 p-2" align="end">
+              <div className="space-y-1">
+                <Button
+                  variant={mapStyle === "light-v11" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="w-full justify-start text-xs h-8"
+                  onClick={() => setMapStyle("light-v11")}
+                >
+                  Light
+                </Button>
+                <Button
+                  variant={mapStyle === "dark-v11" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="w-full justify-start text-xs h-8"
+                  onClick={() => setMapStyle("dark-v11")}
+                >
+                  Dark
+                </Button>
+                <Button
+                  variant={mapStyle === "satellite-v9" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="w-full justify-start text-xs h-8"
+                  onClick={() => setMapStyle("satellite-v9")}
+                >
+                  Satellite
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+        
+        {/* Toggle Sidebar Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="absolute top-4 left-4 bg-background shadow-md h-8 px-2 z-10"
+          onClick={() => setShowSidebar(!showSidebar)}
+        >
+          <Filter size={16} className="mr-1" />
+          {showSidebar ? "Hide Filters" : "Show Filters"}
+        </Button>
+        
+        {/* Selected Issue Popup */}
+        {selectedIssue && (
+          <div 
+            className="absolute bottom-4 left-0 right-0 mx-auto w-80 bg-background rounded-lg shadow-lg border animate-fade-in z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-2">
+                  <CategoryIcon category={selectedIssue.category} />
+                  <div>
+                    <h3 className="font-medium line-clamp-2">{selectedIssue.title}</h3>
+                    <StatusBadge status={selectedIssue.status} size="sm" className="mt-1" />
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => setSelectedIssue(null)}
-                  >
-                    <X size={14} />
-                  </Button>
                 </div>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    {selectedIssue.votes} votes
-                  </span>
-                  <Button 
-                    size="sm" 
-                    onClick={() => handleViewDetails(selectedIssue)}
-                  >
-                    View Details
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setSelectedIssue(null)}
+                >
+                  <X size={14} />
+                </Button>
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {selectedIssue.votes} votes
+                </span>
+                <Button 
+                  size="sm" 
+                  onClick={() => handleViewDetails(selectedIssue)}
+                >
+                  View Details
+                </Button>
               </div>
             </div>
-          )}
-          
-          {/* Back to Top Button (conditional rendering) */}
-          <div className="absolute bottom-4 right-4">
-            <Button
-              variant="outline"
-              size="icon"
-              className="bg-background shadow-md rounded-full h-10 w-10"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            >
-              <ChevronUp size={20} />
-            </Button>
           </div>
-          
-          {/* Mock map markers (would be actual markers with a real map integration) */}
-          {filteredIssues.map(issue => {
-            // Calculate position (random for mock purposes)
-            const left = 10 + (issue.id.charCodeAt(0) % 80) + '%';
-            const top = 10 + (issue.id.charCodeAt(1) % 80) + '%';
-            
-            return (
-              <div 
-                key={issue.id}
-                className={`absolute w-8 h-8 transform -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
-                  selectedIssue?.id === issue.id ? 'z-10 scale-110' : 'z-0'
-                }`}
-                style={{ left, top }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleIssueClick(issue);
-                }}
-              >
-                <div className={`w-6 h-6 rounded-full bg-white shadow-lg flex items-center justify-center border-2 ${
-                  issue.category === 'road' ? 'border-amber-500' : 
-                  issue.category === 'water' ? 'border-blue-500' :
-                  issue.category === 'sanitation' ? 'border-green-500' :
-                  issue.category === 'electricity' ? 'border-yellow-500' :
-                  'border-gray-500'
-                }`}>
-                  <CategoryIcon category={issue.category} size={14} />
-                </div>
-              </div>
-            );
-          })}
-        </MapPlaceholder>
+        )}
+        
+        {/* Back to Top Button */}
+        <div className="absolute bottom-4 right-4 z-10">
+          <Button
+            variant="outline"
+            size="icon"
+            className="bg-background shadow-md rounded-full h-10 w-10"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            <ChevronUp size={20} />
+          </Button>
+        </div>
       </div>
     </div>
   );

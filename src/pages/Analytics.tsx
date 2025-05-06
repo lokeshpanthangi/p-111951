@@ -120,29 +120,29 @@ const Analytics = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-grow py-8 md:py-12 bg-gray-50 dark:bg-gray-800">
+      <main className="flex-grow py-8 md:py-12 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4 md:px-6">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Analytics Dashboard</h1>
           <p className="text-muted-foreground mb-8">
             Explore and analyze civic issues across the community
           </p>
 
-          <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
+          <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-8">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="map">Map View</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="overview" className="space-y-8">
+            <TabsContent value="overview" className="space-y-8 w-full">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Card className="overflow-hidden">
+                <Card>
                   <CardHeader className="pb-2">
                     <CardTitle>Category Distribution</CardTitle>
                     <CardDescription>
                       Number of issues by category
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="h-[300px] p-0">
+                  <CardContent className="h-[300px] p-4">
                     {isLoading ? (
                       <div className="h-full flex items-center justify-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -157,14 +157,14 @@ const Analytics = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="overflow-hidden">
+                <Card>
                   <CardHeader className="pb-2">
                     <CardTitle>Temporal Analysis</CardTitle>
                     <CardDescription>
                       Issue reports over the past 7 days
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="h-[300px] p-0">
+                  <CardContent className="h-[300px] p-4">
                     {isLoading ? (
                       <div className="h-full flex items-center justify-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -196,8 +196,8 @@ const Analytics = () => {
             </TabsContent>
 
             <TabsContent value="map" className="h-[70vh] min-h-[600px]">
-              <Card className="h-full overflow-hidden">
-                <CardContent className="p-0 h-full">
+              <Card className="h-full">
+                <CardContent className="p-0 h-full overflow-hidden">
                   {isLoading ? (
                     <div className="h-full flex items-center justify-center">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
