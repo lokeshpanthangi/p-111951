@@ -1,3 +1,4 @@
+
 import { Issue, IssueCategory, IssueStatus, UserProfile } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -95,7 +96,9 @@ export const createIssue = async (issueData: Partial<Issue>, imageFile?: File): 
       location: issueData.location || "",
       status: issueData.status as IssueStatus || "pending",
       user_id: session.session.user.id,
-      image_url: imageUrl
+      image_url: imageUrl,
+      latitude: issueData.latitude,
+      longitude: issueData.longitude
     })
     .select()
     .single();
@@ -161,7 +164,9 @@ export const updateIssue = async (id: string, issueData: Partial<Issue>, imageFi
       category: issueData.category,
       location: issueData.location,
       status: issueData.status,
-      image_url: imageUrl
+      image_url: imageUrl,
+      latitude: issueData.latitude,
+      longitude: issueData.longitude
     })
     .eq('id', id)
     .select()
@@ -173,6 +178,25 @@ export const updateIssue = async (id: string, issueData: Partial<Issue>, imageFi
   }
   
   return transformIssueFromDb(data);
+};
+
+// Helper function to transform issue data from database
+const transformIssueFromDb = (data: any): Issue => {
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    category: data.category as IssueCategory,
+    location: data.location,
+    status: data.status as IssueStatus,
+    createdAt: new Date(data.created_at),
+    updatedAt: new Date(data.updated_at),
+    userId: data.user_id,
+    imageUrl: data.image_url,
+    votes: data.votes,
+    latitude: data.latitude,
+    longitude: data.longitude
+  };
 };
 
 // Function to delete an issue
@@ -461,31 +485,25 @@ export const getTopVotedIssues = async (limit: number = 10) => {
 };
 
 export const getIssuesForMap = async () => {
-  // This is a mock function since we don't have actual geolocation data in the database
-  // In a real application, you would need to add latitude and longitude columns to your issues table
-  // and fetch that data
-  
+  // Get issues with real location data
   const { data, error } = await supabase
     .from('issues')
     .select('*')
-    .order('votes', { ascending: false });
+    .order('created_at', { ascending: false });
   
   if (error) {
     console.error("Error fetching map issues:", error);
     throw error;
   }
   
-  // Mock transformation to add lat/lng based on location string
-  // In a real app, you would fetch actual coordinates from the database
-  return data.map((issue, index) => ({
+  return data.map((issue) => ({
     id: issue.id,
     title: issue.title,
     category: issue.category as IssueCategory,
     status: issue.status as IssueStatus,
     votes: issue.votes,
-    // Generate some mock coordinates based on the issue index
-    // In a real app, you would use actual coordinates from the database
-    lat: 40.7128 + (Math.random() * 0.02 - 0.01),
-    lng: -74.006 + (Math.random() * 0.02 - 0.01)
+    // Use actual coordinates from the database if available, otherwise generate mock data
+    lat: issue.latitude || (40.7128 + (Math.random() * 0.02 - 0.01)),
+    lng: issue.longitude || (-74.006 + (Math.random() * 0.02 - 0.01))
   }));
 };

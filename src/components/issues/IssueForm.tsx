@@ -26,6 +26,7 @@ import {
 import ImageDropzone from "./ImageDropzone";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
+import LocationSearch from "./LocationSearch";
 
 interface IssueFormProps {
   onSubmit: (data: IssueFormData) => void;
@@ -50,6 +51,9 @@ const formSchema = z.object({
     .min(5, { message: "Location must be at least 5 characters" })
     .max(200, { message: "Location cannot exceed 200 characters" }),
   status: z.enum(["pending", "in-progress", "resolved"]).optional(),
+  // Add coordinate fields
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
 export type IssueFormData = z.infer<typeof formSchema> & {
@@ -76,6 +80,8 @@ const IssueForm = ({
           category: initialData.category,
           location: initialData.location,
           status: initialData.status,
+          latitude: initialData.latitude,
+          longitude: initialData.longitude,
         }
       : {
           title: "",
@@ -83,6 +89,8 @@ const IssueForm = ({
           category: "other" as IssueCategory,
           location: "",
           status: "pending" as IssueStatus,
+          latitude: undefined,
+          longitude: undefined,
         },
   });
 
@@ -95,6 +103,14 @@ const IssueForm = ({
 
   const handleImageSelect = (file: File | null) => {
     setImageFile(file);
+  };
+
+  const handleLocationSelect = (location: string, lat?: number, lng?: number) => {
+    form.setValue("location", location);
+    if (lat && lng) {
+      form.setValue("latitude", lat);
+      form.setValue("longitude", lng);
+    }
   };
 
   // Check if user is creator when editing
@@ -162,14 +178,13 @@ const IssueForm = ({
             <FormItem>
               <FormLabel>Location</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Address or area description"
-                  {...field}
-                  maxLength={200}
+                <LocationSearch 
+                  value={field.value} 
+                  onChange={(location, lat, lng) => handleLocationSelect(location, lat, lng)} 
                 />
               </FormControl>
               <FormDescription>
-                Enter the address or describe the location of the issue.
+                Search for the address or location of the issue.
               </FormDescription>
               <FormMessage />
             </FormItem>

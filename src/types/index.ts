@@ -22,6 +22,8 @@ export type Issue = {
   userId: string;
   imageUrl?: string;
   votes: number;
+  latitude?: number;
+  longitude?: number;
 };
 
 export interface UserProfile {

@@ -24,6 +24,8 @@ const ReportIssue = () => {
           category: data.category,
           location: data.location,
           status: data.status || "pending",
+          latitude: data.latitude,
+          longitude: data.longitude,
         }, 
         data.imageFile || undefined
       );
