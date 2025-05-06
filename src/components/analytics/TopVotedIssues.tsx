@@ -12,10 +12,10 @@ interface TopVotedIssuesProps {
 }
 
 const COLORS = {
-  road: "#F59E0B",     // amber
-  water: "#0EA5E9",    // blue
-  sanitation: "#10B981", // green
-  electricity: "#EAB308", // yellow
+  road: "#FBBF24",     // amber from our updated theme
+  water: "#4C6FFF",    // blue from our updated theme
+  sanitation: "#34D399", // green from our updated theme
+  electricity: "#FBBF24", // amber from our updated theme (for consistency)
   other: "#94A3B8",    // gray
 };
 
@@ -44,25 +44,31 @@ const TopVotedIssues: React.FC<TopVotedIssuesProps> = ({ issues }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="h-80">
+      <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={sortedData}
             layout="vertical"
             margin={{
-              top: 5,
-              right: 30,
-              left: 100,
-              bottom: 5,
+              top: 10,
+              right: 10,
+              left: 0,
+              bottom: 10,
             }}
           >
-            <XAxis type="number" tickLine={false} axisLine={false} />
+            <XAxis 
+              type="number" 
+              tickLine={false} 
+              axisLine={false}
+              tick={{ fontSize: 12 }}
+            />
             <YAxis
               dataKey="title"
               type="category"
               tickLine={false}
               axisLine={false}
               width={90}
+              tick={{ fontSize: 12 }}
               tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
             />
             <Tooltip 
@@ -93,7 +99,7 @@ const TopVotedIssues: React.FC<TopVotedIssuesProps> = ({ issues }) => {
         </ResponsiveContainer>
       </div>
       
-      <Card className="p-4 h-80 overflow-auto">
+      <Card className="p-4 h-[300px] overflow-auto">
         <table className="w-full">
           <thead className="text-sm text-muted-foreground">
             <tr>

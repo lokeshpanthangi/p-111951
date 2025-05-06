@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { getIssues } from "@/lib/supabase-data";
 import { Issue } from "@/types";
 import StatusBadge from "@/components/issues/StatusBadge";
 import CategoryIcon from "@/components/issues/CategoryIcon";
+import { getUserBasedImage } from "@/utils/getDynamicImage";
 
 const Index = () => {
   const { user, isLoading } = useAuth();
@@ -17,6 +19,9 @@ const Index = () => {
   const [recentIssues, setRecentIssues] = useState<Issue[]>([]);
   const [isLoadingIssues, setIsLoadingIssues] = useState(true);
   const authSectionRef = useRef<HTMLDivElement>(null);
+  
+  // Get dynamic hero image based on user ID
+  const heroImageUrl = getUserBasedImage(user?.id);
   
   const handleAuthSuccess = () => {
     // This is handled by the AuthContext now
@@ -63,7 +68,7 @@ const Index = () => {
                   CivicSync connects citizens with local authorities to resolve problems 
                   and improve neighborhoods together.
                 </p>
-                <div className="mt-8 flex flex-col md:flex-row gap-4 justify-center md:justify-start">
+                <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                   <Button size="lg" asChild>
                     <Link to="/report">
                       Report an Issue <ArrowRight className="ml-2 h-5 w-5" />
@@ -75,12 +80,12 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="relative mx-auto max-w-md">
-                <div className="absolute inset-0 bg-civic-blue/10 rounded-lg transform rotate-3 scale-105"></div>
+              <div className="relative mx-auto w-full max-w-md">
+                <div className="absolute inset-0 bg-primary/10 rounded-lg transform rotate-3 scale-105"></div>
                 <img 
-                  src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&auto=format&fit=crop"
+                  src={heroImageUrl}
                   alt="Community enhancement" 
-                  className="relative rounded-lg shadow-lg"
+                  className="relative rounded-lg shadow-lg w-full h-64 md:h-auto object-cover"
                 />
               </div>
             </div>
@@ -99,8 +104,8 @@ const Index = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
               <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-civic-blue/10 flex items-center justify-center mb-4">
-                  <span className="text-2xl font-bold text-civic-blue">1</span>
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <span className="text-2xl font-bold text-primary">1</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Submit Your Report</h3>
                 <p className="text-muted-foreground">
@@ -109,8 +114,8 @@ const Index = () => {
               </div>
               
               <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-civic-blue/10 flex items-center justify-center mb-4">
-                  <span className="text-2xl font-bold text-civic-blue">2</span>
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <span className="text-2xl font-bold text-primary">2</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Track Progress</h3>
                 <p className="text-muted-foreground">
@@ -119,8 +124,8 @@ const Index = () => {
               </div>
               
               <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-civic-blue/10 flex items-center justify-center mb-4">
-                  <span className="text-2xl font-bold text-civic-blue">3</span>
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <span className="text-2xl font-bold text-primary">3</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Problem Solved</h3>
                 <p className="text-muted-foreground">
@@ -161,7 +166,7 @@ const Index = () => {
             ) : recentIssues.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {recentIssues.map((issue) => (
-                  <div key={issue.id} className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
+                  <div key={issue.id} className="bg-white dark:bg-gray-900 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
                     <div className="h-48 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
                       {issue.imageUrl ? (
                         <img 

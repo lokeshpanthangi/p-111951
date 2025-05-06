@@ -28,15 +28,15 @@ const TemporalAnalysis: React.FC<TemporalAnalysisProps> = ({ data }) => {
   }
 
   return (
-    <div className="h-80 w-full">
+    <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={formattedData}
           margin={{
-            top: 5,
-            right: 30,
-            left: 20,
-            bottom: 5,
+            top: 10,
+            right: 10,
+            left: 0,
+            bottom: 10,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -44,11 +44,14 @@ const TemporalAnalysis: React.FC<TemporalAnalysisProps> = ({ data }) => {
             dataKey="formattedDate" 
             tickLine={false}
             axisLine={false}
+            tick={{ fontSize: 12 }}
+            tickMargin={10}
           />
           <YAxis 
             tickLine={false}
             axisLine={false}
             width={30}
+            tick={{ fontSize: 12 }}
             tickFormatter={(value) => value}
             domain={[0, 'auto']}
           />

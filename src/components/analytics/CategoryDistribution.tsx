@@ -16,10 +16,10 @@ interface CategoryDistributionProps {
 }
 
 const COLORS = {
-  road: "#F59E0B",     // amber
-  water: "#0EA5E9",    // blue
-  sanitation: "#10B981", // green
-  electricity: "#EAB308", // yellow
+  road: "#FBBF24",     // amber from our updated theme
+  water: "#4C6FFF",    // blue from our updated theme
+  sanitation: "#34D399", // green from our updated theme
+  electricity: "#FBBF24", // amber from our updated theme (for consistency)
   other: "#94A3B8",    // gray
 };
 
@@ -46,7 +46,7 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({
   }
 
   return (
-    <div className="h-80 w-full">
+    <div className="h-[300px] w-full">
       <div className="text-center mb-2">
         <div className="text-2xl font-bold">{totalIssues}</div>
         <div className="text-xs text-muted-foreground">Total Issues</div>
@@ -66,7 +66,7 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({
             nameKey="displayName"
             onClick={(entry) => onCategoryClick && onCategoryClick(entry.name)}
             activeIndex={selectedCategory ? chartData.findIndex(item => item.name === selectedCategory) : undefined}
-            activeShape={({ cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, name }) => {
+            activeShape={({ cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill }) => {
               return (
                 <g>
                   <path

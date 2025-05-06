@@ -63,18 +63,18 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Civic Issue Colors
+				// New modern color palette
 				civic: {
-					blue: '#0EA5E9',
-					green: '#10B981',
-					amber: '#F59E0B',
-					red: '#EF4444',
-					light: '#F2FCE2'
+					blue: '#4C6FFF',
+					green: '#34D399',
+					amber: '#FBBF24',
+					red: '#F43F5E',
+					light: '#F0FDF9'
 				},
 				status: {
-					pending: '#F59E0B',
-					"in-progress": '#0EA5E9',
-					resolved: '#10B981'
+					pending: '#FBBF24',
+					"in-progress": '#4C6FFF',
+					resolved: '#34D399'
 				}
 			},
 			borderRadius: {
