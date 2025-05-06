@@ -2,6 +2,25 @@
 import { Issue, IssueCategory, IssueStatus, UserProfile } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
+// Helper function to transform issue data from database
+const transformIssueFromDb = (data: any): Issue => {
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    category: data.category as IssueCategory,
+    location: data.location,
+    status: data.status as IssueStatus,
+    createdAt: new Date(data.created_at),
+    updatedAt: new Date(data.updated_at),
+    userId: data.user_id,
+    imageUrl: data.image_url,
+    votes: data.votes,
+    latitude: data.latitude || null,
+    longitude: data.longitude || null
+  };
+};
+
 // Function to get all issues
 export const getIssues = async (): Promise<Issue[]> => {
   const { data, error } = await supabase
@@ -180,25 +199,6 @@ export const updateIssue = async (id: string, issueData: Partial<Issue>, imageFi
   return transformIssueFromDb(data);
 };
 
-// Helper function to transform issue data from database
-const transformIssueFromDb = (data: any): Issue => {
-  return {
-    id: data.id,
-    title: data.title,
-    description: data.description,
-    category: data.category as IssueCategory,
-    location: data.location,
-    status: data.status as IssueStatus,
-    createdAt: new Date(data.created_at),
-    updatedAt: new Date(data.updated_at),
-    userId: data.user_id,
-    imageUrl: data.image_url,
-    votes: data.votes,
-    latitude: data.latitude,
-    longitude: data.longitude
-  };
-};
-
 // Function to delete an issue
 export const deleteIssue = async (id: string): Promise<boolean> => {
   const { data: session } = await supabase.auth.getSession();
@@ -293,23 +293,6 @@ export const hasVotedOnIssue = async (issueId: string): Promise<boolean> => {
   }
   
   return data && data.length > 0;
-};
-
-// Helper function to transform issue data from database
-const transformIssueFromDb = (data: any): Issue => {
-  return {
-    id: data.id,
-    title: data.title,
-    description: data.description,
-    category: data.category as IssueCategory,
-    location: data.location,
-    status: data.status as IssueStatus,
-    createdAt: new Date(data.created_at),
-    updatedAt: new Date(data.updated_at),
-    userId: data.user_id,
-    imageUrl: data.image_url,
-    votes: data.votes
-  };
 };
 
 // Function to get user profile
@@ -502,8 +485,7 @@ export const getIssuesForMap = async () => {
     category: issue.category as IssueCategory,
     status: issue.status as IssueStatus,
     votes: issue.votes,
-    // Use actual coordinates from the database if available, otherwise generate mock data
-    lat: issue.latitude || (40.7128 + (Math.random() * 0.02 - 0.01)),
-    lng: issue.longitude || (-74.006 + (Math.random() * 0.02 - 0.01))
+    lat: issue.latitude || (40.7128 + (Math.random() * 0.02 - 0.01)), // Use actual data or fallback to mock
+    lng: issue.longitude || (-74.006 + (Math.random() * 0.02 - 0.01))  // Use actual data or fallback to mock
   }));
 };
