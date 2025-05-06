@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { formatDistanceToNow, format } from "date-fns";
@@ -110,6 +111,17 @@ const IssueDetails = () => {
     }
   };
 
+  const navigateToMap = () => {
+    if (issue?.latitude && issue?.longitude) {
+      navigate(`/analytics`, { state: { issueId: issue.id, showMap: true } });
+    } else {
+      toast({
+        title: "Location not available",
+        description: "This issue doesn't have precise location coordinates to display on the map.",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -187,10 +199,15 @@ const IssueDetails = () => {
                   <span className="ml-2 capitalize">{issue.category}</span>
                 </div>
                 
-                <div className="flex items-center text-muted-foreground">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 px-2 flex items-center text-muted-foreground"
+                  onClick={navigateToMap}
+                >
                   <MapPin size={16} className="mr-1" />
                   <span>{issue.location}</span>
-                </div>
+                </Button>
                 
                 <div className="flex items-center text-muted-foreground ml-auto">
                   <Calendar size={16} className="mr-1" />

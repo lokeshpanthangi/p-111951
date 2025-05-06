@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -48,8 +49,18 @@ interface MapIssue {
   votes: number;
 }
 
+interface LocationState {
+  issueId?: string;
+  showMap?: boolean;
+}
+
 const Analytics = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const location = useLocation();
+  const state = location.state as LocationState | null;
+  const showMap = state?.showMap || false;
+  const focusIssueId = state?.issueId || null;
+  
+  const [activeTab, setActiveTab] = useState(showMap ? "map" : "overview");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -207,6 +218,7 @@ const Analytics = () => {
                       issues={mapIssues}
                       selectedCategory={selectedCategory}
                       setSelectedCategory={setSelectedCategory}
+                      focusIssueId={focusIssueId}
                     />
                   )}
                 </CardContent>

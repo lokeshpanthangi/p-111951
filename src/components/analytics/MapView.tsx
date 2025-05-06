@@ -47,6 +47,7 @@ interface MapViewProps {
   issues: MapIssue[];
   selectedCategory: string | null;
   setSelectedCategory: (category: string | null) => void;
+  focusIssueId?: string | null;
 }
 
 // Set Mapbox token
@@ -55,7 +56,8 @@ mapboxgl.accessToken = 'pk.eyJ1IjoibmFuaS0wMDciLCJhIjoiY21hYnppeG5nMjV6NTJsc2c3M
 const MapView: React.FC<MapViewProps> = ({ 
   issues, 
   selectedCategory,
-  setSelectedCategory
+  setSelectedCategory,
+  focusIssueId
 }) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,6 +95,9 @@ const MapView: React.FC<MapViewProps> = ({
     
     return matchesSearch && matchesStatus && matchesCategory;
   });
+
+  // Find the issue to focus on if focusIssueId is provided
+  const focusIssue = focusIssueId ? issues.find(issue => issue.id === focusIssueId) : null;
   
   // Update category filters when selectedCategory changes from parent
   useEffect(() => {
@@ -178,8 +183,11 @@ const MapView: React.FC<MapViewProps> = ({
         issue.category === 'electricity' ? '#FACC15' :
         '#6B7280';
       
+      // Highlight the focused issue with a special marker
+      const isFocused = focusIssueId && issue.id === focusIssueId;
+      
       markerElement.innerHTML = `
-        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center border-2" 
+        <div class="w-6 h-6 rounded-full ${isFocused ? 'animate-pulse shadow-lg scale-125' : ''} bg-white flex items-center justify-center border-2" 
              style="border-color: ${color}">
           <div class="text-xs">${getCategoryIconText(issue.category)}</div>
         </div>
@@ -204,15 +212,27 @@ const MapView: React.FC<MapViewProps> = ({
       hasValidBounds = true;
     });
     
-    // Fit map to bounds if there are any issues
-    if (hasValidBounds && filteredIssues.length > 0) {
+    // If there's a focus issue, zoom directly to it
+    if (focusIssue && map.current) {
+      map.current.flyTo({
+        center: [focusIssue.lng, focusIssue.lat],
+        zoom: 15,
+        essential: true,
+        duration: 2000
+      });
+      
+      // Also select the issue in the sidebar
+      setSelectedIssue(focusIssue);
+    }
+    // Otherwise fit map to bounds if there are any issues
+    else if (hasValidBounds && filteredIssues.length > 0) {
       map.current.fitBounds(bounds, { 
         padding: 50, 
         maxZoom: 15,
         duration: 1000
       });
     }
-  }, [filteredIssues, mapStyle]);
+  }, [filteredIssues, mapStyle, focusIssueId, focusIssue]);
   
   const getCategoryIconText = (category: IssueCategory) => {
     switch (category) {

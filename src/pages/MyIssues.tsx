@@ -58,6 +58,10 @@ const MyIssues = () => {
     }
   };
 
+  const handleIssueClick = (issue: Issue) => {
+    navigate(`/issues/${issue.id}`);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -89,6 +93,7 @@ const MyIssues = () => {
               isUserOwned={true}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onClick={handleIssueClick}
             />
           )}
           

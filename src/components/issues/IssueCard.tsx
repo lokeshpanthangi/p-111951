@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { Issue } from "@/types";
@@ -103,11 +104,9 @@ const IssueCard = ({
             <span className="text-xs text-muted-foreground ml-auto">{timeAgo}</span>
           </div>
           
-          <Link to={`/issues/${issue.id}`} className="block group">
-            <h3 className="font-medium text-lg mb-2 line-clamp-2 group-hover:text-primary group-hover:underline">
-              {issue.title}
-            </h3>
-          </Link>
+          <h3 className="font-medium text-lg mb-2 line-clamp-2 group-hover:text-primary group-hover:underline">
+            {issue.title}
+          </h3>
           
           <div className="flex items-center justify-between">
             <div className="mt-2 text-sm text-muted-foreground truncate max-w-[70%]">
@@ -141,7 +140,7 @@ const IssueCard = ({
             >
               <ThumbsUp size={14} className={cn("text-primary", isVoting && "animate-pulse")} /> 
               <span className="text-xs font-medium">{issue.votes}</span>
-              <span className="ml-1 text-xs font-semibold">UPVOTE</span>
+              <span className="ml-1 text-xs font-semibold">Votes</span>
             </button>
           </div>
 
